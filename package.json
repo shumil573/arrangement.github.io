@@ -2,6 +2,7 @@
   "name": "my-app",
   "version": "0.1.0",
   "private": true,
+  "homepage":"https://shumil573.github.io/arrangement.github.io",
   "dependencies": {
     "@babel/core": "7.12.3",
     "@pmmmwh/react-refresh-webpack-plugin": "0.4.3",
@@ -72,7 +73,8 @@
   "scripts": {
     "start": "node scripts/start.js",
     "build": "node scripts/build.js",
-    "test": "node scripts/test.js"
+    "test": "node scripts/test.js",
+    "gh-pages": "react-scripts build && gh-pages -d build"
   },
   "eslintConfig": {
     "extends": [
@@ -149,11 +151,17 @@
       "react-app"
     ],
     "plugins": [
-       ["import", {
-         "libraryName": "antd",
-         "libraryDirectory": "es",
-         "style": "css"
-       }]
-     ]
+      [
+        "import",
+        {
+          "libraryName": "antd",
+          "libraryDirectory": "es",
+          "style": "css"
+        }
+      ]
+    ]
+  },
+  "devDependencies": {
+    "gh-pages": "^3.1.0"
   }
 }
