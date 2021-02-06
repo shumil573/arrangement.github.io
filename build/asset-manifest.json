@@ -1,0 +1,25 @@
+{
+  "files": {
+    "main.css": "/arrangement.github.io/static/css/main.6dea0f05.chunk.css",
+    "main.js": "/arrangement.github.io/static/js/main.b474b1ce.chunk.js",
+    "main.js.map": "/arrangement.github.io/static/js/main.b474b1ce.chunk.js.map",
+    "runtime-main.js": "/arrangement.github.io/static/js/runtime-main.339d2ae0.js",
+    "runtime-main.js.map": "/arrangement.github.io/static/js/runtime-main.339d2ae0.js.map",
+    "static/css/2.98ba2c20.chunk.css": "/arrangement.github.io/static/css/2.98ba2c20.chunk.css",
+    "static/js/2.45437b01.chunk.js": "/arrangement.github.io/static/js/2.45437b01.chunk.js",
+    "static/js/2.45437b01.chunk.js.map": "/arrangement.github.io/static/js/2.45437b01.chunk.js.map",
+    "static/js/3.9319833d.chunk.js": "/arrangement.github.io/static/js/3.9319833d.chunk.js",
+    "static/js/3.9319833d.chunk.js.map": "/arrangement.github.io/static/js/3.9319833d.chunk.js.map",
+    "index.html": "/arrangement.github.io/index.html",
+    "static/css/2.98ba2c20.chunk.css.map": "/arrangement.github.io/static/css/2.98ba2c20.chunk.css.map",
+    "static/css/main.6dea0f05.chunk.css.map": "/arrangement.github.io/static/css/main.6dea0f05.chunk.css.map",
+    "static/js/2.45437b01.chunk.js.LICENSE.txt": "/arrangement.github.io/static/js/2.45437b01.chunk.js.LICENSE.txt"
+  },
+  "entrypoints": [
+    "static/js/runtime-main.339d2ae0.js",
+    "static/css/2.98ba2c20.chunk.css",
+    "static/js/2.45437b01.chunk.js",
+    "static/css/main.6dea0f05.chunk.css",
+    "static/js/main.b474b1ce.chunk.js"
+  ]
+}
