@@ -2,7 +2,7 @@
   "name": "my-app",
   "version": "0.1.0",
   "private": true,
-  "homepage":"https://shumil573.github.io/arrangement.github.io",
+  "homepage": "https://shumil573.github.io/arrangement.github.io",
   "dependencies": {
     "@babel/core": "7.12.3",
     "@pmmmwh/react-refresh-webpack-plugin": "0.4.3",
@@ -12,7 +12,9 @@
     "@testing-library/user-event": "^12.6.3",
     "@typescript-eslint/eslint-plugin": "^4.5.0",
     "@typescript-eslint/parser": "^4.5.0",
-    "antd": "^4.12.2",
+    "antd": "^4.15.5",
+    "antd-mobile": "^2.3.4",
+    "axios": "^0.21.1",
     "babel-eslint": "^10.1.0",
     "babel-jest": "^26.6.0",
     "babel-loader": "8.1.0",
@@ -51,6 +53,7 @@
     "postcss-preset-env": "6.7.0",
     "postcss-safe-parser": "5.0.2",
     "prompts": "2.4.0",
+    "qs": "^6.10.1",
     "react": "^17.0.1",
     "react-app-polyfill": "^2.0.0",
     "react-dev-utils": "^11.0.2",
@@ -162,6 +165,7 @@
     ]
   },
   "devDependencies": {
+    "babel-plugin-import": "^1.13.3",
     "gh-pages": "^3.1.0"
   }
 }

@@ -3,7 +3,8 @@ import ReactDOM from 'react-dom';
 import './index.css';
 import moment from 'moment';
 import reportWebVitals from './reportWebVitals';
-import { Button, Row, Col } from 'antd';
+import { Button, Flex, WhiteSpace} from 'antd-mobile';
+import { Col, Row} from 'antd';
 
 function PlusSec(props) {
   return (
@@ -19,7 +20,7 @@ function MinusSec(props) {
   return (
     <Button
       onClick={props.onClick}
-      type="dashed">
+      >
       {props.value}s
     </Button>
   );
@@ -39,7 +40,7 @@ function MinusMin(props) {
   return (
     <Button
       onClick={props.onClick}
-      type="dashed">
+      >
       {props.value}min
     </Button>
   );
@@ -102,6 +103,7 @@ class TimeDOM extends React.Component {
     super(props);
     this.state = {
       date: new Date(),
+      ClickTime:new Date(),
       timeSum: 0,
       cur: 0,
       counting: false,
@@ -181,102 +183,120 @@ class TimeDOM extends React.Component {
   render() {
     return (
       <div className="App">
-        <Row justify="center" style={{marginTop:"16px"}}>
-          <Col span="4" >
+        <Row >
+          <Col>
             <SecTimer
               time={10}
               onClick={i => this.handleClick(i)}
             />
           </Col>
-          <Col span="4" >
+          <Col>
             <SecTimer
               time={15}
               onClick={i => this.handleClick(i)}
             />
           </Col>
         </Row>
-        <Row justify="center" >
-          <Col span="4" >
+        <Flex >
+          <Flex.Item>
+            <SecTimer
+              time={10}
+              onClick={i => this.handleClick(i)}
+            />
+          </Flex.Item>
+          <Flex.Item>
+            <SecTimer
+              time={15}
+              onClick={i => this.handleClick(i)}
+            />
+          </Flex.Item>
+        </Flex>
+        <WhiteSpace />
+        <Flex justify="center" >
+          <Flex.Item span="4" >
             <SecTimer
               time={-10}
               onClick={i => this.handleClick(i)}
             />
-          </Col>
-          <Col span="4" >
+          </Flex.Item>
+          <Flex.Item span="4" >
             <SecTimer
               time={-15}
               onClick={i => this.handleClick(i)}
             />
-          </Col>
-        </Row>
-
-        <Row justify="center" style={{marginTop:"16px"}}>
-          <Col span="4" >
+          </Flex.Item>
+        </Flex>
+        <WhiteSpace />
+        <Flex justify="center" style={{marginTop:"16px"}}>
+          <Flex.Item span="4" >
             <MinTimer
               time={1}
               onClick={i => this.handleClick(i)}
             />
-          </Col>
-          <Col span="4" >
+          </Flex.Item>
+          <Flex.Item span="4" >
             <MinTimer
               time={5}
               onClick={i => this.handleClick(i)}
             />
-          </Col>
-          <Col span="4" >
+          </Flex.Item>
+          <Flex.Item span="4" >
             <MinTimer
               time={10}
               onClick={i => this.handleClick(i)}
             />
-          </Col>
-        </Row>
-        <Row justify="center" >
-          <Col span="4" >
+          </Flex.Item>
+        </Flex>
+        <WhiteSpace />
+        <Flex justify="center" >
+          <Flex.Item span="4" >
             <MinTimer
               time={-1}
               onClick={i => this.handleClick(i)}
             />
-          </Col>
-          <Col span="4" >
+          </Flex.Item>
+          <Flex.Item span="4" >
             <MinTimer
               time={-5}
               onClick={i => this.handleClick(i)}
             />
-          </Col>
-          <Col span="4" >
+          </Flex.Item>
+          <Flex.Item span="4" >
             <MinTimer
               time={-10}
               onClick={i => this.handleClick(i)}
             />
-          </Col>
-        </Row>
+          </Flex.Item>
+        </Flex>
 
         {
           this.state.counting === true && (
             <div>
-              <Row justify="center" style={{marginTop:"16px"}}>
+              <WhiteSpace />
+              <Flex justify="center" style={{marginTop:"16px"}}>
                 <Button type="default">倒计时{this.state.higher}'{this.state.lower}''</Button>
-              </Row>
-              <Row justify="center" >
+              </Flex>
+              <Flex justify="center" >
                 <Button onClick={() => this.reset()} type="dashed">停止计时</Button>
-              </Row>
+              </Flex>
             </div>
           )
         }
         {
           this.state.counting === false && this.state.cached === false && (
             <div>
-              <Row justify="center" style={{marginTop:"16px"}}>
+              <WhiteSpace />
+              <Flex justify="center" style={{marginTop:"16px"}}>
                 <Button
                   onClick={() => this.start()}
                   type="primary"
                 >
                   {this.state.higher}'{this.state.lower}''开始计时
                 </Button>
-              </Row>
-              <Row justify="center" >
+              </Flex>
+              <Flex justify="center" >
                 <Button onClick={() => this.reset()} type="dashed">重置</Button>
-              </Row>
+              </Flex>
             </div>
             
           )
@@ -284,12 +304,13 @@ class TimeDOM extends React.Component {
         {
           this.state.counting === false && this.state.cached === true && (
             <div>
-              <Row justify="center" style={{marginTop:"16px"}}>
+              <WhiteSpace />
+              <Flex justify="center" style={{marginTop:"16px"}}>
                 <Button onClick={() => this.resume()} type="primary">激活上次计时时长 {this.state.higher}'{this.state.lower}''</Button>
-              </Row>
-              <Row justify="center" >
+              </Flex>
+              <Flex justify="center" >
                 <Button onClick={() => this.reset()} type="dashed">重置</Button>
-              </Row>
+              </Flex>
             </div>
             
           )
