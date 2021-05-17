@@ -4,8 +4,8 @@ import './index.css';
 import moment from 'moment';
 import reportWebVitals from './reportWebVitals';
 import 'antd-mobile/dist/antd-mobile.css';
-import { Card, Button, Flex, Icon, WhiteSpace, WingBlank } from 'antd-mobile'
-import { PageHeader, Table, DatePicker} from 'antd';
+import { Toast, Card, Button, Flex, Icon, WhiteSpace, WingBlank } from 'antd-mobile'
+import { PageHeader, Table, DatePicker, message} from 'antd';
 
 const { RangePicker } = DatePicker;
 
@@ -180,6 +180,10 @@ class TimeDOM extends React.Component {
             //var n = new Notification('通知标题', { body: '这里是通知内容！' }); 
             var n = new Notification('时间到！', { body: old_mins+'分'+ old_ss+'秒计时结束'}); 
           });
+        } else {
+          Toast.fail("Toast！该浏览器不允许通知!"+old_mins+"分"+ old_ss+"秒计时时间到", 2);
+          message.error("Error！该浏览器不允许通知!"+old_mins+"分"+ old_ss+"秒计时时间到");
+          console.alert("Alert！该浏览器不允许通知!"+old_mins+"分"+ old_ss+"秒计时时间到");
         }
         this.setState({
           counting: false,
@@ -399,6 +403,13 @@ class TimeDOM extends React.Component {
             </Card.Body>
           </Card>
         </WingBlank>
+        <DatePicker
+          value={moment('2013-02-08 09:30:26')}
+          format="MM-DD-HH:mm"
+          disabled
+          >
+            
+          </DatePicker>
       </div>
     )
   }
