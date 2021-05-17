@@ -4,15 +4,17 @@ import './index.css';
 import moment from 'moment';
 import reportWebVitals from './reportWebVitals';
 import 'antd-mobile/dist/antd-mobile.css';
-import { Card, Button,Flex, Icon, WhiteSpace, WingBlank} from 'antd-mobile'
-import { Divider } from 'antd';
+import { Card, Button, Flex, Icon, WhiteSpace, WingBlank } from 'antd-mobile'
+import { PageHeader, Table, DatePicker} from 'antd';
+
+const { RangePicker } = DatePicker;
 
 function PlusSec(props) {
   return (
     <Button
       onClick={props.onClick}
       type="primary"
-      >
+    >
       +{props.value}s
     </Button>
   );
@@ -22,7 +24,7 @@ function MinusSec(props) {
   return (
     <Button
       onClick={props.onClick}
-      >
+    >
       {props.value}s
     </Button>
   );
@@ -74,6 +76,7 @@ class SecTimer extends React.Component {
   }
 }
 
+
 class MinTimer extends React.Component {
   renderMinutes(i) {
     if (i >= 0) {
@@ -100,18 +103,55 @@ class MinTimer extends React.Component {
   }
 }
 
+const columns = [
+  {
+    title: 'todo',
+    dataIndex: 'desc',
+    key: 'desc',
+  },
+  {
+    title: '死线',
+    dataIndex: 'ddl',
+    render: (name,{ddl}) => ([
+      <DatePicker
+          value={moment(ddl)}
+          format="MM-DD-HH:mm"
+          disabled
+      > </DatePicker>
+    ])
+  },
+];
+
 class TimeDOM extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      date: new Date(),
       timeSum: 0,
       cur: 0,
       counting: false,
-      higher: 0,
-      lower: 0,
-      pg1:'/timer.png',
+      hours: 0,
+      mins: 0,
+      ss: 0,
+      old_hours: 0,
+      old_mins: 0,
+      old_ss: 0,
+      start: 0,
+      end: 0,
       cached: false,
+      dataSource:[
+        {
+          ddl:'2021-05-17T17:46:56+08:00',
+          desc:'这是写死的实例一',
+        },
+        {
+          ddl:'Mon May 17 2021 17:46:56 GMT+0800',
+          desc:'Mon May 17 2021 17:46:56 GMT+0800',
+        },
+        {
+          ddl:'2013-02-08 09:30:26',
+          desc:'moment().format()',
+        },
+      ]
     };
   }
 
@@ -122,18 +162,29 @@ class TimeDOM extends React.Component {
     );
   }
 
-  tick(){
-    if(this.state.counting===true){
-      let cur=this.state.cur;
-      if(cur>0){
-        cur-=1;
-        const higher = Math.floor(cur / 60);
-        const lower = cur % 60;
-        this.setState({ cur,higher, lower });
-      }else{
+  tick() {
+    if (this.state.counting === true) {
+      let cur = this.state.cur;
+      if (cur > 0) {
+        cur -= 1;
+        const mins = Math.floor(cur / 60);
+        const ss = cur % 60;
+        this.setState({ cur, mins, ss });
+      } else if (cur==0 && this.state.counting==true) {
+        const sum=this.state.timeSum;
+        const old_hours = Math.floor(sum / 3600);
+        const old_mins = Math.floor(sum / 60);
+        const old_ss = sum % 60;
+        if(window.Notification && Notification.permission !== "denied") {
+          Notification.requestPermission(function(status) {
+            //var n = new Notification('通知标题', { body: '这里是通知内容！' }); 
+            var n = new Notification('时间到！', { body: old_mins+'分'+ old_ss+'秒计时结束'}); 
+          });
+        }
         this.setState({
-          counting:false,
-          cached:true,
+          counting: false,
+          cached: true,
+          old_hours,old_mins,old_ss
         })
       }
     }
@@ -142,52 +193,78 @@ class TimeDOM extends React.Component {
   handleClick(i) {
     let sum = this.state.timeSum;
     sum = (sum + i >= 0) ? sum + i : 0;
-    const higher = Math.floor(sum / 60);
-    const lower = sum % 60;
-    this.setState({ timeSum: sum, higher, lower });
-    console.log(typeof (this.state.timeSum), this.state.timeSum);
-    console.log(this.state.higher, this.state.lower);
+    const hours = Math.floor(sum / 3600);
+    const mins = Math.floor(sum / 60);
+    const ss = sum % 60;
+    if(this.state.counting==false&&this.state.cached==false) {
+      this.setState({ timeSum: sum, hours, mins, ss });
+      console.log(typeof (this.state.timeSum), this.state.timeSum);
+      console.log(this.state.mins, this.state.ss);
+    }
   }
 
   start = () => {
     console.log("start!");
     console.log(this.state.timeSum);
     const sum = this.state.timeSum;
-    if (sum > 0) {
-      let start = new Date;
+    if (sum > 0 && this.state.counting == false) {
+      var start = moment().format();
+      var end = moment().add(sum, 'seconds')//找到的好函数！ 
+      console.log(moment().toString());
       console.log(start);
+      var dur = moment.duration(sum, 'seconds'),
+        hours = dur.get('hours'),
+        mins = dur.get('minutes'),
+        ss = dur.get('seconds');
       const count = true;
-      this.setState({ counting:count, cur:sum });
+      this.setState({ counting: count, cur: sum });
     }
   }
 
   resume = () => {
     const cached = false;
-    const sum=this.state.timeSum;
-    const higher = Math.floor(sum / 60);
-    const lower = sum % 60;
-    this.setState({ cached,higher,lower});
+    const sum = this.state.timeSum;
+    const hours=Math.floor(sum / 3600);
+    const mins = Math.floor(sum / 60);
+    const ss = sum % 60;
+    this.setState({ cached, hours,mins, ss });
   }
 
   reset = () => {
     if (this.state.counting === true) {//停止计时，时间下次可以利用
       const cached = true;
-      const cur=0;
-      const sum=this.state.timeSum;
-      const higher = Math.floor(sum / 60);
-      const lower = sum % 60;
-      this.setState({ cached, counting: false,cur,higher,lower });
+      const cur = 0;
+      const sum = this.state.timeSum;
+      const hours = Math.floor(sum / 3600);
+      const mins = Math.floor(sum / 60);
+      const ss = sum % 60;
+      this.setState({ cached, counting: false, cur, hours, mins, ss });
     } else if (this.state.counting === false) {
-      const timeSum = 0, cur = 0,higher=0,lower=0;
+      const timeSum = 0, cur = 0, hours=0,mins = 0, ss = 0;
       const cached = false;
-      this.setState({ timeSum, cur, cached,higher,lower });
+      this.setState({ timeSum, cur, cached, hours,mins, ss });
     }
+  }
+
+  stop = () => {
+    const cached = true;
+    const sum = this.state.timeSum;
+    const old_hours = Math.floor(sum / 3600);
+    const old_mins = Math.floor(sum / 60);
+    const old_ss = sum % 60;
+    this.setState({ cached, counting: false, old_hours, old_mins, old_ss });
   }
 
   render() {
     return (
       <div className="App">
-        <WingBlank>
+        <PageHeader
+          className="site-page-header"
+          onBack={() => null}
+          title="废宅养肝宝"
+          subTitle="憋玩了，学习去吧"
+        />
+        <WingBlank size="lg">
           <WhiteSpace />
           <Card>
             <Card.Header
@@ -271,41 +348,43 @@ class TimeDOM extends React.Component {
               {
                 this.state.counting === true && (
                   <div>
-                      <Button>倒计时{this.state.higher}'{this.state.lower}''</Button>
-                      <Button onClick={() => this.reset()}>停止计时</Button>
+                    <Button disabled>倒计时{this.state.mins}'{this.state.ss}''</Button>
+                    <Button onClick={() => this.stop()}>停止计时</Button>
                   </div>
                 )
               }
               {
                 this.state.counting === false && this.state.cached === false && (
                   <div>
-                      <Button
-                        onClick={() => this.start()}
-                        type="primary"
-                      >
-                        {this.state.higher}'{this.state.lower}''开始计时
+                    <Button
+                      onClick={() => this.start()}
+                      type="primary"
+                    >
+                      {this.state.mins}'{this.state.ss}''开始计时
                       </Button>
-                      <Button 
-                        onClick={() => this.reset()}
-                      >
-                        重置
+                    <Button
+                      onClick={() => this.reset()}
+                    >
+                      重置
                       </Button>
                   </div>
-                  
+
                 )
               }
               {
                 this.state.counting === false && this.state.cached === true && (
                   <div>
-                      <Button onClick={() => this.resume()} type="primary">激活上次计时时长 {this.state.higher}'{this.state.lower}''</Button>
-                      <Button onClick={() => this.reset()}>重置</Button>
+                    <Button onClick={() => this.resume()} type="primary">激活上次计时时长 {this.state.old_mins}'{this.state.old_ss}''</Button>
+                    <Button onClick={() => this.reset()}>重置</Button>
                   </div>
-                  
+
                 )
               }
             </Card.Body>
           </Card>
-          <Divider />
+          
+          <WhiteSpace />
+
           <Card>
             <Card.Header
               title={<span >todo倒计时</span>}
@@ -315,18 +394,7 @@ class TimeDOM extends React.Component {
             />
             <Card.Body>
               <Flex justify="center">
-                <Flex.Item>
-                  <SecTimer
-                    time={10}
-                    onClick={i => this.handleClick(i)}
-                  />
-                </Flex.Item>
-                <Flex.Item>
-                  <SecTimer
-                    time={15}
-                    onClick={i => this.handleClick(i)}
-                  />
-                </Flex.Item>
+                <Table dataSource={this.state.dataSource} columns={columns} />
               </Flex>
             </Card.Body>
           </Card>
