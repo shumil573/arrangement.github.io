@@ -4,8 +4,8 @@ import './index.css';
 import moment from 'moment';
 import reportWebVitals from './reportWebVitals';
 import 'antd-mobile/dist/antd-mobile.css';
-import { Toast, Card, Button, Flex, Icon, WhiteSpace, WingBlank } from 'antd-mobile'
-import { PageHeader, Table, DatePicker, message} from 'antd';
+import { Toast, Card, Flex, Icon, WhiteSpace, WingBlank } from 'antd-mobile'
+import { PageHeader, Table, DatePicker, message, Input, Form,Button } from 'antd';
 
 const { RangePicker } = DatePicker;
 
@@ -13,7 +13,6 @@ function PlusSec(props) {
   return (
     <Button
       onClick={props.onClick}
-      type="primary"
     >
       +{props.value}s
     </Button>
@@ -112,12 +111,44 @@ const columns = [
   {
     title: '死线',
     dataIndex: 'ddl',
-    render: (name,{ddl}) => ([
+    render: (name, { ddl }) => ([
       <DatePicker
-          value={moment(ddl)}
-          format="MM-DD-HH:mm"
-          disabled
+        value={moment(ddl)}
+        format="MM-DD-HH:mm"
+        disabled
       > </DatePicker>
+    ])
+  },
+];
+
+const todoColumns = [
+  {
+    title: 'todo',
+    dataIndex: 'title',
+    key: 'title',
+  },
+  {
+    title: '死线',
+    dataIndex: 'ddl',
+    render: (name, { ddl }) => ([
+      <DatePicker
+        value={moment(ddl)}
+        format="MM-DD HH:mm"
+        disabled
+      > </DatePicker>
+    ])
+  },
+  {
+    title: '进展',
+    dataIndex: 'done',
+    key: 'done',
+    render: (name, { done }) => ([
+      done===true&&(
+        <label>已完成</label>
+      ),
+      done===false&&(
+        <Button>未完成</Button>
+      )
     ])
   },
 ];
@@ -138,29 +169,131 @@ class TimeDOM extends React.Component {
       start: 0,
       end: 0,
       cached: false,
-      dataSource:[
+      ddl_time: '02-08 09:30',
+      dataSource: [
         {
-          ddl:'2021-05-17T17:46:56+08:00',
-          desc:'这是写死的实例一',
+          ddl: '2021-05-17T17:46:56+08:00',
+          desc: '这是写死的实例一',
         },
         {
-          ddl:'Mon May 17 2021 17:46:56 GMT+0800',
-          desc:'Mon May 17 2021 17:46:56 GMT+0800',
+          ddl: 'Mon May 17 2021 17:46:56 GMT+0800',
+          desc: 'Mon May 17 2021 17:46:56 GMT+0800',
         },
         {
-          ddl:'2013-02-08 09:30:26',
-          desc:'moment().format()',
+          ddl: '2013-02-08 09:30:26',
+          desc: 'moment().format()',
         },
-      ]
+      ],
+      todoSource:[],
+
     };
   }
 
   componentDidMount() {
+    this.load();
     this.timerID = setInterval(
       () => this.tick(),
       1000
     );
   }
+
+  load() {
+    var collection = localStorage.getItem("todo");
+    if (collection != null) {
+      var data = JSON.parse(collection);
+    } else var data = [];
+    this.setState({todoSource:data});
+  }
+
+  /* loadData() {
+    var collection = localStorage.getItem("todo");
+    if (collection != null) {
+      return JSON.parse(collection);
+    } else return [];
+  }
+
+  saveData(data) {
+    localStorage.setItem("todo", JSON.stringify(data));
+  }
+
+  load() {
+    var todolist = document.getElementById("todolist");
+    var donelist = document.getElementById("donelist");
+    var collection = localStorage.getItem("todo");
+    if (collection != null) {
+      var data = JSON.parse(collection);
+      var todoCount = 0;
+      var doneCount = 0;
+      var todoString = "";
+      var doneString = "";
+      for (var i = data.length - 1; i >= 0; i--) {
+        if (data[i].done) {
+          doneString += "<li draggable='true'><input type='checkbox' onchange='update(" + i + ",\"done\",false)' checked='checked' />" +
+          "<p id='p-" + i + "' onclick='edit(" + i + ")'>" + data[i].title + "</p>" +
+          "<a href='javascript:remove(" + i + ")'>-</a></li>";
+          doneCount++;
+        } else {
+          todoString += "<li draggable='true'><input type='checkbox' onchange='update(" + i + ",\"done\",true)' />" +
+          "<p id='p-" + i + "' onclick='edit(" + i + ")'>" + data[i].title + "</p>" +
+          "<a href='javascript:remove(" + i + ")'>-</a></li>";
+          todoCount++;
+        }
+      };
+      alert("if");
+      todocount.innerHTML = todoCount;
+      todolist.innerHTML = todoString;
+      donecount.innerHTML = doneCount;
+      donelist.innerHTML = doneString; 
+    } else {
+
+      alert("else");
+      todocount.innerHTML = 0;
+      todolist.innerHTML = "";
+      donecount.innerHTML = 0;
+      donelist.innerHTML = ""; 
+    }
+  }
+
+  postaction1() {
+    // 获取title节点
+    var title = document.getElementById("title");
+    if (title.value.trim() == "") {
+        alert("内容不能为空");
+    } else {
+        var data = this.loadData();
+        var todo = { "title": title.value, "done": false };
+        data.push(todo);
+        this.saveData(data);
+        var form = document.getElementById("form");
+        form.reset();
+        this.load();
+      }
+    } */
+
+  onFinish=(values) =>{
+    console.log(values);
+    var collection = localStorage.getItem("todo");
+    if (collection != null) {
+      var data = JSON.parse(collection);
+    } else var data = [];
+    console.log('data:', data);
+    var todo = { "title": values.detail, "done": false, "ddl": values.time };
+    data.push(todo);
+    console.log('data:', data);
+    localStorage.setItem("todo", JSON.stringify(data));
+    this.setState({todoSource:data});
+  }
+
+  onFinishFailed(errorInfo) {
+    console.log('Failed:', errorInfo);
+  };
+
+  /* onTimeChange(value, dateString) {
+    console.log('onOk: ', value);
+    let ddl_time=value.format("MM-DD HH:mm");
+    console.log(typeof(ddl_time),ddl_time);
+    this.setState({ddl_time:ddl_time});
+  } */
 
   tick() {
     if (this.state.counting === true) {
@@ -170,8 +303,8 @@ class TimeDOM extends React.Component {
         const mins = Math.floor(cur / 60);
         const ss = cur % 60;
         this.setState({ cur, mins, ss });
-      } else if (cur==0 && this.state.counting==true) {
-        const sum=this.state.timeSum;
+      } else if (cur == 0 && this.state.counting == true) {
+        const sum = this.state.timeSum;
         const old_hours = Math.floor(sum / 3600);
         const old_mins = Math.floor(sum / 60);
         const old_ss = sum % 60;
@@ -182,17 +315,18 @@ class TimeDOM extends React.Component {
         //   });
         // } else 
         {
-          Toast.fail("Toast！该浏览器不允许通知!"+old_mins+"分"+ old_ss+"秒计时时间到", 2);
-          message.error("Error！该浏览器不允许通知!"+old_mins+"分"+ old_ss+"秒计时时间到");
+          Toast.fail("Toast！该浏览器不允许通知!" + old_mins + "分" + old_ss + "秒计时时间到", 2);
+          message.error("Error！该浏览器不允许通知!" + old_mins + "分" + old_ss + "秒计时时间到");
         }
         this.setState({
           counting: false,
           cached: true,
-          old_hours,old_mins,old_ss
+          old_hours, old_mins, old_ss
         });
       }
     }
   }
+
 
   handleClick(i) {
     let sum = this.state.timeSum;
@@ -200,7 +334,7 @@ class TimeDOM extends React.Component {
     const hours = Math.floor(sum / 3600);
     const mins = Math.floor(sum / 60);
     const ss = sum % 60;
-    if(this.state.counting==false&&this.state.cached==false) {
+    if (this.state.counting == false && this.state.cached == false) {
       this.setState({ timeSum: sum, hours, mins, ss });
       console.log(typeof (this.state.timeSum), this.state.timeSum);
       console.log(this.state.mins, this.state.ss);
@@ -228,10 +362,10 @@ class TimeDOM extends React.Component {
   resume = () => {
     const cached = false;
     const sum = this.state.timeSum;
-    const hours=Math.floor(sum / 3600);
+    const hours = Math.floor(sum / 3600);
     const mins = Math.floor(sum / 60);
     const ss = sum % 60;
-    this.setState({ cached, hours,mins, ss });
+    this.setState({ cached, hours, mins, ss });
   }
 
   reset = () => {
@@ -244,9 +378,9 @@ class TimeDOM extends React.Component {
       const ss = sum % 60;
       this.setState({ cached, counting: false, cur, hours, mins, ss });
     } else if (this.state.counting === false) {
-      const timeSum = 0, cur = 0, hours=0,mins = 0, ss = 0;
+      const timeSum = 0, cur = 0, hours = 0, mins = 0, ss = 0;
       const cached = false;
-      this.setState({ timeSum, cur, cached, hours,mins, ss });
+      this.setState({ timeSum, cur, cached, hours, mins, ss });
     }
   }
 
@@ -386,7 +520,7 @@ class TimeDOM extends React.Component {
               }
             </Card.Body>
           </Card>
-          
+
           <WhiteSpace />
 
           <Card>
@@ -397,19 +531,50 @@ class TimeDOM extends React.Component {
               }
             />
             <Card.Body>
+              <Form
+                onFinish={this.onFinish}
+                onFinishFailed={this.onFinishFailed}
+                name="basic"
+              >
+                <Form.Item
+                  label="ddl"
+                  name="time"
+                  placeholder="添加ToDo"
+                >
+                  <DatePicker
+                    showTime={{ format: 'HH:mm' }}
+                    format="MM-DD HH:mm"
+                  />
+                </Form.Item>
+                <Form.Item
+                  label="事务描述"
+                  name="detail"
+                  placeholder="添加ToDo"
+                  rules={[
+                    {
+                      required: true,
+                      message: 'Please input your todo!',
+                    },
+                  ]}
+                >
+                  <Input />
+                </Form.Item>
+                <Form.Item>
+                  <Button type="primary" htmlType="submit">
+                    添加
+                  </Button>
+                </Form.Item>
+              </Form>
+
+              <Flex justify="center">
+                <Table dataSource={this.state.todoSource} columns={todoColumns} />
+              </Flex>
               <Flex justify="center">
                 <Table dataSource={this.state.dataSource} columns={columns} />
               </Flex>
             </Card.Body>
           </Card>
         </WingBlank>
-        <DatePicker
-          value={moment('2013-02-08 09:30:26')}
-          format="MM-DD-HH:mm"
-          disabled
-          >
-            
-          </DatePicker>
       </div>
     )
   }
