@@ -13,6 +13,7 @@ function PlusSec(props) {
   return (
     <Button
       onClick={props.onClick}
+      type="primary"
     >
       +{props.value}s
     </Button>
