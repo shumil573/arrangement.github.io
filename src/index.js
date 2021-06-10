@@ -130,39 +130,40 @@ class TimeDOM extends React.Component {
     };
     this.todoColumns = [
       {
-        title: 'NO',
-        dataIndex: 'id',
-        key: 'id',
-      },
-      {
         title: 'todo',
         dataIndex: 'title',
         key: 'title',
+        ellipsis: true,
       },
       {
         title: '死线',
         dataIndex: 'ddl',
+        key: 'ddl',
+        width: '70px',
         render: (name, { ddl }) => ([
-          <DatePicker
-            value={moment(ddl)}
-            format="MM-DD HH:mm"
-            disabled
-          > </DatePicker>
+          moment(ddl).format("MM-DD HH:mm").toString()
         ])
       },
       {
         title: '进展',
         dataIndex: 'done',
         key: 'done',
+        width: '50px',
         render: (name, { done, id }) => ([
           done === true && (
-            <label>已完成</label>
+            <Button
+              shape="circle"
+              onClick={() => this.end(id)}
+            >
+              完
+            </Button>
           ),
           done === false && (
             <Button
+              shape="circle"
               onClick={() => this.comple(id)}
             >
-              未完成
+              未
             </Button>
           )
         ])
@@ -181,6 +182,8 @@ class TimeDOM extends React.Component {
     );
   }
 
+  formRef = React.createRef()
+
   comple = (id) => {
     var collection = localStorage.getItem("todo");
     if (collection != null) {
@@ -191,11 +194,26 @@ class TimeDOM extends React.Component {
     localStorage.setItem("todo", JSON.stringify(data));
   }
 
+  end = (id) => {
+    var collection = localStorage.getItem("todo");
+    if (collection != null) {
+      var data = JSON.parse(collection);
+      var data_end = [];
+      for (var key in data) {
+        if (data[key]["id"] != id) data_end.push(data[key]);
+      }
+    } else return;
+    console.log('data:', data_end);
+    this.setState({ todoSource: data_end });
+    localStorage.setItem("todo", JSON.stringify(data_end));
+  }
+
   load() {
     var collection = localStorage.getItem("todo");
     if (collection != null) {
       var data = JSON.parse(collection);
     } else var data = [];
+    console.log('data:', data);
     this.setState({ todoSource: data });
   }
 
@@ -219,12 +237,18 @@ class TimeDOM extends React.Component {
     var todo = { "id": seq + 1, "title": values.detail, "done": false, "ddl": values.time };
     data.push(todo);
     console.log('data:', data);
+    console.log(typeof (data));
     localStorage.setItem("todo", JSON.stringify(data));
     this.setState({ todoSource: data });
+    this.onReset();
   }
 
   onFinishFailed(errorInfo) {
     console.log('Failed:', errorInfo);
+  };
+
+  onReset = () => {
+    this.formRef.current.resetFields();
   };
 
   tick() {
@@ -484,18 +508,13 @@ class TimeDOM extends React.Component {
                 <svg t="1621233024225" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="1829" width="30" height="30"><path d="M713.3184 905.2672h-482.816c-73.5232 0-133.12-59.5968-133.12-133.12V267.4176c0-73.5232 59.5968-133.12 133.12-133.12h503.296c73.5232 0 133.12 59.5968 133.12 133.12v484.3008c0 84.7872-68.8128 153.5488-153.6 153.5488z" fill="#80B7F9" p-id="1830"></path><path d="M695.296 729.4464m-234.752 0a234.752 234.752 0 1 0 469.504 0 234.752 234.752 0 1 0-469.504 0Z" fill="#80B7F9" p-id="1831"></path><path d="M866.9184 757.6576v-188.5696c-42.8544-45.824-103.8336-74.5472-171.52-74.5472-129.6896 0-234.752 105.1136-234.752 234.752 0 70.0928 30.7712 132.9664 79.4624 175.9744h179.1488c81.5104 0 147.6608-66.0992 147.6608-147.6096z" fill="#3E8BF8" p-id="1832"></path><path d="M308.5824 230.5536c-21.76 0-39.3728-17.6128-39.3728-39.3728V97.6896c0-21.76 17.6128-39.3728 39.3728-39.3728s39.3728 17.6128 39.3728 39.3728v93.4912c0 21.7088-17.664 39.3728-39.3728 39.3728zM659.3024 230.5536c-21.76 0-39.3728-17.6128-39.3728-39.3728V97.6896c0-21.76 17.6128-39.3728 39.3728-39.3728s39.3728 17.6128 39.3728 39.3728v93.4912c0 21.7088-17.664 39.3728-39.3728 39.3728z" fill="#80B7F9" p-id="1833"></path><path d="M269.2096 134.2976v56.8832c0 21.76 17.6128 39.3728 39.3728 39.3728s39.3728-17.6128 39.3728-39.3728V134.2976H269.2096zM619.9296 134.2976v56.8832c0 21.76 17.6128 39.3728 39.3728 39.3728s39.3728-17.6128 39.3728-39.3728V134.2976h-78.7456z" fill="#3E8BF8" p-id="1834"></path><path d="M757.0944 371.2512H207.104c-22.6304 0-40.96-18.3296-40.96-40.96s18.3296-40.96 40.96-40.96h549.9904c22.6304 0 40.96 18.3296 40.96 40.96s-18.3296 40.96-40.96 40.96zM273.5104 559.7184H207.104c-22.6304 0-40.96-18.3296-40.96-40.96s18.3296-40.96 40.96-40.96h66.4064c22.6304 0 40.96 18.3296 40.96 40.96s-18.3296 40.96-40.96 40.96zM463.7184 559.7184H397.312c-22.6304 0-40.96-18.3296-40.96-40.96s18.3296-40.96 40.96-40.96h66.4064c22.6304 0 40.96 18.3296 40.96 40.96s-18.3808 40.96-40.96 40.96zM666.4704 838.4512c-11.1616 0-21.8112-4.5568-29.5424-12.5952l-65.4848-68.1984a40.93952 40.93952 0 0 1 1.1776-57.9072 40.93952 40.93952 0 0 1 57.9072 1.1776l35.0208 36.5056 93.6448-103.4752a40.96 40.96 0 0 1 57.856-2.8672 40.91904 40.91904 0 0 1 2.8672 57.856l-123.136 136.0384a40.96 40.96 0 0 1-29.7472 13.4656h-0.5632z" fill="#FFFFFF" p-id="1835"></path></svg>
               }
             />
-            {/* <Button
-              onClick={() => this.clear()}
-              type="primary"
-            >
-              清空缓存
-            </Button> */}
 
             <Card.Body>
 
               <Form
                 onFinish={this.onFinish}
                 onFinishFailed={this.onFinishFailed}
+                ref={this.formRef}
                 name="basic"
               >
 
@@ -540,6 +559,13 @@ class TimeDOM extends React.Component {
               <Flex justify="center">
                 <Table dataSource={this.state.todoSource} columns={this.todoColumns} />
               </Flex>
+
+              <Button
+                onClick={() => this.clear()}
+                type="primary"
+              >
+                清空缓存
+            </Button>
             </Card.Body>
 
 
