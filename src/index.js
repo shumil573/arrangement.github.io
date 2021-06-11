@@ -141,7 +141,15 @@ class TimeDOM extends React.Component {
         key: 'ddl',
         width: '70px',
         render: (name, { ddl }) => ([
-          moment(ddl).format("MM-DD HH:mm").toString()
+          (moment(ddl).subtract(1, 'days').format("MM-DD").toString()===moment().format("MM-DD").toString())&&(
+            '明天'+moment(ddl).format("HH:mm").toString()
+            ),
+          (moment(ddl).format("MM-DD").toString()===moment().format("MM-DD").toString())&&(
+            '今天'+moment(ddl).format("HH:mm").toString()
+          ),
+          (moment(ddl).subtract(1, 'days').format("MM-DD").toString()>moment().format("MM-DD").toString())&&(
+            moment(ddl).format("MM-DD HH:mm").toString()
+            )
         ])
       },
       {
@@ -265,11 +273,13 @@ class TimeDOM extends React.Component {
         const old_hours = Math.floor(sum / 3600);
         const old_mins = Math.floor(sum / 60);
         const old_ss = sum % 60;
-        if(window.Notification && Notification.permission !== "denied") {
+        if(window.Notification) {
+          if(Notification.permission == "granted") {
           Notification.requestPermission(function(status) {
             //var n = new Notification('通知标题', { body: '这里是通知内容！' }); 
             var n = new Notification('时间到！', { body: old_mins+'分'+ old_ss+'秒计时结束'}); 
           });
+        }
         } else {
           Toast.fail("Toast！该浏览器不允许通知!" + old_mins + "分" + old_ss + "秒计时时间到", 2);
           message.error("Error！该浏览器不允许通知!" + old_mins + "分" + old_ss + "秒计时时间到");
