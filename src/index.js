@@ -98,6 +98,47 @@ class SecTimer extends React.Component {
   }
 }
 
+function AddLine(props) {
+  return (
+    <Timeline.Item
+      color="green"
+    >
+      {props.value}
+    </Timeline.Item>
+  );
+}
+
+function ChangeLine(props) {
+  return (
+    <Timeline.Item
+    >
+      {props.value}
+    </Timeline.Item>
+  );
+}
+
+class MyTimeLine extends React.Component {
+  renderMytlitem(line) {
+    if (line[0]==="加"&&line[1]==="入") {
+      return (
+        <AddLine
+          value={line}
+        />
+      )
+    } else {
+      return (
+        <ChangeLine
+          value={line}
+        />
+      )
+    }
+  }
+
+  render() {
+    return this.props.source.map((line)=>this.renderMytlitem(line));
+    
+  }
+}
 
 class MinTimer extends React.Component {
   renderMinutes(i) {
@@ -141,6 +182,7 @@ class TimeDOM extends React.Component {
       start: 0,
       end: 0,
       cached: false,
+      reverse:false,
       todoSource: [],
       stackSource: [],
       timelineSource: [
@@ -235,7 +277,7 @@ class TimeDOM extends React.Component {
           (changing===1) && (
             <div>
               <Slider 
-              min={cur}
+              min={0}
               max={sum}
               defaultValue={cur} 
               onChange={this.onStackChange}
@@ -288,6 +330,7 @@ class TimeDOM extends React.Component {
     var collection = localStorage.getItem("todo");
     if (collection != null) {
       var data = JSON.parse(collection);
+      console.log(id-1);
       data[id - 1]["done"] = true;
     } else return;
     this.setState({ todoSource: data });
@@ -322,6 +365,13 @@ class TimeDOM extends React.Component {
     } else var data1 = [];
     console.log('data1:', data1);
     this.setState({ stackSource: data1 });
+
+    var collection2 = localStorage.getItem("timeline");
+    if (collection2 != null) {
+      var data2 = JSON.parse(collection2);
+    } else var data2 = [];
+    console.log('data2:', data2);
+    this.setState({ timelineSource: data2 });
   }
 
   clear() {
@@ -360,12 +410,31 @@ class TimeDOM extends React.Component {
 
   update = (id) => {
     var collection = localStorage.getItem("stack");
+    var collection2 = localStorage.getItem("timeline");
     if (collection != null) {
       var data = JSON.parse(collection);
+      var log1=this.state.new_cur-data[id - 1]["cur"];
       data[id - 1]["cur"] = this.state.new_cur;
       data[id - 1]["changing"] = 0;
       console.log(data);
     } else return;
+    if(data[id - 1]["cur"]===data[id - 1]["sum"]) {
+      var line=moment().format("MM-DD").toString()+" 消耗 "+data[id - 1]["title"]+"全部用完";
+      var data2 = JSON.parse(collection2);
+      data2.push(line);
+      localStorage.setItem("timeline", JSON.stringify(data2));
+      this.setState({ timelineSource: data2 });
+    } else if(log1!==0) {
+      if(data[id - 1]["sum"]===100) {
+        var line=moment().format("MM-DD").toString()+" 消耗 "+log1+"%"+data[id - 1]["title"];
+      } else {
+        var line=moment().format("MM-DD").toString()+" 消耗 "+log1+"/"+data[id - 1]["sum"]+data[id - 1]["title"];
+      }
+      var data2 = JSON.parse(collection2);
+      data2.push(line);
+      localStorage.setItem("timeline", JSON.stringify(data2));
+      this.setState({ timelineSource: data2 });
+    }
     this.setState({ stackSource: data });
     localStorage.setItem("stack", JSON.stringify(data));
   }
@@ -375,17 +444,24 @@ class TimeDOM extends React.Component {
     if(values.sum!==undefined) {
       console.log("处理库存部分");
       var collection = localStorage.getItem("stack");
+      var collection2 = localStorage.getItem("timeline");
       if (collection != null) {
         var data = JSON.parse(collection);
       } else var data = [];
+      if (collection2 != null) {
+        var data2 = JSON.parse(collection2);
+      } else var data2 = [];
       console.log('data:', data);
       var seq = Object.keys(data).length;
       var todo = { "id": seq + 1, "title": values.sdetail, "sum": parseInt(values.sum), "cur": 0, "changing":0 };
       data.push(todo);
+      var line=moment().format("MM-DD").toString()+" 加入 "+values.sdetail;
+      data2.push(line);
       console.log('data:', data);
       console.log(typeof (data));
       localStorage.setItem("stack", JSON.stringify(data));
-      this.setState({ stackSource: data });
+      localStorage.setItem("timeline", JSON.stringify(data2));
+      this.setState({ stackSource: data,timelineSource:data2 });
       this.onReset();
     } else {
       var collection = localStorage.getItem("todo");
@@ -797,12 +873,20 @@ class TimeDOM extends React.Component {
                     <Table dataSource={this.state.stackSource} columns={this.stackColumns} style={{ width: '100%'}}/>
                   </Flex>
 
+                  <Timeline reverse={this.state.reverse}>
+                  <MyTimeLine
+                    source={this.state.timelineSource}
+                  />
+                </Timeline>
+
                   <Button
                     onClick={() => this.sclear()}
                     type="primary"
                   >
                     清空缓存
                 </Button>
+                
+
                 </Card.Body>
 
 
