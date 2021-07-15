@@ -108,6 +108,16 @@ function AddLine(props) {
   );
 }
 
+function OutOfLine(props) {
+  return (
+    <Timeline.Item
+      color="yellow"
+    >
+      {props.value}
+    </Timeline.Item>
+  );
+}
+
 function ChangeLine(props) {
   return (
     <Timeline.Item
@@ -119,9 +129,15 @@ function ChangeLine(props) {
 
 class MyTimeLine extends React.Component {
   renderMytlitem(line) {
-    if (line[0]==="加"&&line[1]==="入") {
+    if (line[6]==="加"&&line[7]==="入") {
       return (
         <AddLine
+          value={line}
+        />
+      )
+    } else if(line[6]==="超"&&line[7]==="棒") {
+      return (
+        <OutOfLine
           value={line}
         />
       )
@@ -135,7 +151,8 @@ class MyTimeLine extends React.Component {
   }
 
   render() {
-    return this.props.source.map((line)=>this.renderMytlitem(line));
+    var tool=this.props.source.slice();
+    return tool.reverse().map((line)=>this.renderMytlitem(line));
     
   }
 }
@@ -244,20 +261,29 @@ class TimeDOM extends React.Component {
     this.stackColumns = [
       {
         title: '进展',
-        dataIndex: 'done',
-        key: 'done',
+        dataIndex: 'cur',
+        onFilter: (value, record) => record.cur.indexOf(value) === 0,
+        sorter: (a, b) =>( (a.cur/a.sum) - (b.cur/b.sum)),
+        defaultSortOrder: 'ascend',
+        key: 'cur',
         render: (name, { changing,title,cur, sum,id }) => ([
           (cur===0&&changing===0) && (
             <ProgressBar animated striped variant="warning" now={100} label={`${title}囤积未使用`} />
           ),
-          (cur!==0&&changing===0&&sum!==100&&(cur/sum*100)>10) && (
+          (cur!==0&&changing===0&&sum!==100&&cur===sum) && (
+            <ProgressBar animated striped now={100} label={`${sum}*${title}已用完 超棒！`} />
+          ),
+          (cur!==0&&changing===0&&sum===100&&cur===sum) && (
+            <ProgressBar animated striped now={100} label={`一份${title}已用完 超棒！`} />
+          ),
+          (cur!==0&&changing===0&&sum!==100&&(cur/sum*100)>10&&cur!==sum) && (
             <ProgressBar animated striped variant="info" now={cur/sum*100} label={`${title} ${cur}/${sum}`} />
             
           ),
-          (cur!==0&&changing===0&&sum===100&&cur>10) && (
+          (cur!==0&&changing===0&&sum===100&&cur>10&&cur!==sum) && (
             <ProgressBar animated striped variant="info" now={cur} label={`${title} ${cur}%`} />
           ),
-          (cur!==0&&changing===0&&sum!==100&&(cur/sum*100)<=10) && (
+          (cur!==0&&changing===0&&sum!==100&&(cur/sum*100)<=10&&cur!==sum) && (
             <div>
               <ProgressBar>
                 <ProgressBar animated striped variant="info" now={cur/sum*100} label={`${cur}/${sum}`} key={1}/>
@@ -265,7 +291,7 @@ class TimeDOM extends React.Component {
               </ProgressBar>
             </div>
           ),
-          (cur!==0&&changing===0&&sum===100&&cur<=10) && (
+          (cur!==0&&changing===0&&sum===100&&cur<=10&&cur!==sum) && (
             <div>
               <ProgressBar>
                 <ProgressBar animated striped variant="info" now={cur} label={`${cur}%`} key={1} />
@@ -292,15 +318,21 @@ class TimeDOM extends React.Component {
         dataIndex: 'done',
         key: 'done',
         width: '50px',
-        render: (name, { changing,id,cur }) => ([
-          
-            changing===0&&(<Button
+        render: (name, { changing,id,cur,sum }) => ([
+            (cur===sum)&&(<Button
+              type="danger"
+              shape="circle"
+              onClick={() => this.deleteS(id)}
+            >
+              忘
+            </Button>),
+            (changing===0&&cur!==sum)&&(<Button
               shape="circle"
               onClick={() => this.ready(id,cur)}
             >
               改
             </Button>),
-            changing===1&&(<Button
+            (changing===1&&cur!==sum)&&(<Button
               shape="circle"
               type="primary"
               onClick={() => this.update(id)}
@@ -342,8 +374,12 @@ class TimeDOM extends React.Component {
     if (collection != null) {
       var data = JSON.parse(collection);
       var data_end = [];
-      for (var key in data) {
-        if (data[key]["id"] != id) data_end.push(data[key]);
+      for (var i=0;i<id-1;i++) {
+        data_end.push(data[i]);
+      }
+      for (var j=id;j<data.length;j++) {
+        data[j]["id"]=data[j]["id"]-1;
+        data_end.push(data[j]);
       }
     } else return;
     console.log('data:', data_end);
@@ -419,7 +455,7 @@ class TimeDOM extends React.Component {
       console.log(data);
     } else return;
     if(data[id - 1]["cur"]===data[id - 1]["sum"]) {
-      var line=moment().format("MM-DD").toString()+" 消耗 "+data[id - 1]["title"]+"全部用完";
+      var line=moment().format("MM-DD").toString()+" 超棒 "+data[id - 1]["title"]+"全部用完";
       var data2 = JSON.parse(collection2);
       data2.push(line);
       localStorage.setItem("timeline", JSON.stringify(data2));
@@ -437,6 +473,24 @@ class TimeDOM extends React.Component {
     }
     this.setState({ stackSource: data });
     localStorage.setItem("stack", JSON.stringify(data));
+  }
+
+  deleteS = (id) => {
+    var collection = localStorage.getItem("stack");
+    if (collection != null) {
+      var data = JSON.parse(collection);
+      var data_deleted = [];
+      for (var i=0;i<id-1;i++) {
+        data_deleted.push(data[i]);
+      }
+      for (var j=id;j<data.length;j++) {
+        data[j]["id"]=data[j]["id"]-1;
+        data_deleted.push(data[j]);
+      }
+      console.log('data:', data_deleted);
+    } else return;
+    this.setState({ stackSource: data_deleted });
+    localStorage.setItem("stack", JSON.stringify(data_deleted));
   }
 
   onFinish = (values) => {
