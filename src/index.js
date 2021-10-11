@@ -420,12 +420,15 @@ class TimeDOM extends React.Component {
   }
 
   sclear() {
-    var collection = localStorage.getItem("stack");
-    if (collection != null) {
-      var data = [];
+    var collection = localStorage.getItem("timeline");
+    let tool = JSON.parse(collection);
+    if (tool != null&&tool.length>10) {
+      var data=tool.slice(tool.length-10,tool.length);
+    } else {
+      var data = JSON.parse(collection);
     }
-    localStorage.setItem("stack", JSON.stringify(data));
-    this.setState({ stackSource: data });
+    localStorage.setItem("timeline", JSON.stringify(data));
+    this.setState({ timelineSource: data });
   }
 
   ready = (id,cur) => {
@@ -937,7 +940,7 @@ class TimeDOM extends React.Component {
                     onClick={() => this.sclear()}
                     type="primary"
                   >
-                    清空缓存
+                    精简缓存
                 </Button>
                 
 
