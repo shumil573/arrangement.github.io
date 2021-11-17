@@ -4,10 +4,16 @@ import './index.css';
 import moment from 'moment';
 import reportWebVitals from './reportWebVitals';
 import 'antd-mobile/dist/antd-mobile.css';
-import { Toast, Card, Flex, Icon, Tabs, WhiteSpace, Badge, WingBlank } from 'antd-mobile'
-import { PageHeader, Table, DatePicker, message, Input, Form, Button, Row, Col, Slider,Timeline  } from 'antd';
+import { Toast, Card, Flex, Icon, Tabs, WhiteSpace, Badge, WingBlank, TextareaItem } from 'antd-mobile'
+import { PageHeader, Table, Radio, DatePicker, Modal, message, Input, Form, Button, Row, Col, Slider, Timeline } from 'antd';
+import {
+  CloseCircleTwoTone
+} from '@ant-design/icons';
+import { createFromIconfontCN } from '@ant-design/icons';
 import 'bootstrap/dist/css/bootstrap.css'
 import { ProgressBar } from "react-bootstrap";
+import TypeIcon from './typeIcon';
+import { typeParameter } from '@babel/types';
 
 //import { Toast } from 'bootstrap.esm.min.js'
 
@@ -22,8 +28,27 @@ const tabs = [
 const tabs2 = [
   { title: '时间', sub: '1' },
   { title: '库存', sub: '2' },
-  //{ title: 'Third Tab', sub: '3' },
+  { title: '子弹', sub: '3' },
 ];
+
+const types = [
+  { title: '普通', NO: 0 },
+  { title: '待办', NO: 1 },
+  { title: '星星', NO: 2 },
+  { title: '注意', NO: 3 },
+  { title: '完成', NO: 4 },
+  { title: '延后', NO: 5 },
+  { title: '提前', NO: 6 },
+  { title: '惊叹', NO: 7 },
+  { title: '时限', NO: 8 },
+  { title: '点子', NO: 9 },
+  { title: '进行中', NO: 10 },
+  { title: '生活小窍门', NO: 11 },
+]
+
+const IconFont = createFromIconfontCN({
+  scriptUrl: '//at.alicdn.com/t/font_2928730_zkgv1kj04ua.js',
+});
 
 function PlusSec(props) {
   return (
@@ -127,15 +152,16 @@ function ChangeLine(props) {
   );
 }
 
+
 class MyTimeLine extends React.Component {
   renderMytlitem(line) {
-    if (line[6]==="加"&&line[7]==="入") {
+    if (line[6] === "加" && line[7] === "入") {
       return (
         <AddLine
           value={line}
         />
       )
-    } else if(line[6]==="超"&&line[7]==="棒") {
+    } else if (line[6] === "超" && line[7] === "棒") {
       return (
         <OutOfLine
           value={line}
@@ -151,9 +177,68 @@ class MyTimeLine extends React.Component {
   }
 
   render() {
-    var tool=this.props.source.slice();
-    return tool.reverse().map((line)=>this.renderMytlitem(line));
-    
+    var tool = this.props.source.slice();
+    return tool.reverse().map((line) => this.renderMytlitem(line));
+
+  }
+}
+
+class MyBtiLine extends React.Component {
+  constructor(props) {
+    super(props);
+    this.handleType = this.handleType.bind(this);
+  }
+  handleType(id) {
+    // let btilineSource=this.state.btilineSource;
+    // var newType=7;
+    console.log(id + '当前，修改类型为7');
+    // btilineSource[id-1].type=newType;
+    // this.setState({btilineSource});
+  }
+  renderMybtiitem(line) {
+    if (line.ddl == null) {
+      return (
+        <Timeline.Item
+          dot={<TypeIcon value={line.type} />}
+        >
+          {line.bti}
+        </Timeline.Item>
+      )
+    }
+    if (moment(line.ddl).subtract(1, 'days').format("MM-DD").toString() === moment().format("MM-DD").toString()) {
+      return (
+        <Timeline.Item
+          dot={<button class="transButton" onClick={() => this.handleType(line.id)} ><TypeIcon value={line.type} /></button>}
+          label={'--\x20\x20\x20明天  ' + moment(line.ddl).format("HH:mm").toString()}
+        >
+          {line.bti}
+        </Timeline.Item>
+      )
+    } else if (moment(line.ddl).format("MM-DD").toString() === moment().format("MM-DD").toString()) {
+      return (
+        <Timeline.Item
+          dot={<button class="transButton" onClick={() => this.handleType(line.id)} ><TypeIcon value={line.type} /></button>}
+          label={'--\x20\x20\x20今天  ' + moment(line.ddl).format("HH:mm").toString()}
+        // style={{color:"red"}}
+        >
+          {<div color="gray">{line.bti}</div>}
+        </Timeline.Item>
+      )
+    } else {
+      return (
+        <Timeline.Item
+          dot={<button class="transButton" onClick={() => this.handleType(line.id)} ><TypeIcon value={line.type} /></button>}
+          label={'--\x20\x20' + moment(line.ddl).format("MM-DD HH:mm").toString()}
+        >
+          {line.bti}
+        </Timeline.Item>
+      )
+    }
+  }
+
+  render() {
+    var tool = this.props.source.slice();
+    return tool.reverse().map((line) => this.renderMybtiitem(line));
   }
 }
 
@@ -198,14 +283,53 @@ class TimeDOM extends React.Component {
       old_ss: 0,
       start: 0,
       end: 0,
+      type: 0,
+      cur_type: 0,
       cached: false,
-      reverse:false,
+      reverse: false,
+      isModalVisible: false,
+      isDeleteModalVisible:false,
+      btiLineOnChange: null,
       todoSource: [],
       stackSource: [],
+      btiSource: [],
       timelineSource: [
         "加入 夏黑葡萄 ",
         "消耗 1/7 夏黑葡萄",
         "消耗 2/3 矿泉水",
+      ],
+      //var bti = { "id": seq + 1, "bti": values.bulletin, "type": 0, "ddl": values.btiTime };
+
+      btilineSource: [
+        {
+          id: 1,
+          bti: "drink water",
+          type: 0,
+          btiTime: "11-16 14:20",
+        },
+        {
+          id: 2,
+          bti: "like a boss",
+          type: 2,
+          btiTime: "11-15 23:59",
+        },
+        {
+          id: 3,
+          bti: "我是超级长的中文字段，我用来演示分行的情况，会不会自动分行呢？？？假设不可以那我要伤心了哦。",
+          type: 4,
+          btiTime: "&nbsp;11-05 10:00",
+        },
+        {
+          id: 4,
+          bti: "我是超级长的中文字段，我用来演示分行的情况，会不会自动分行呢？？？假设不可以那我要伤心了哦。",
+          type: 99,
+          btiTime: "11-14 10:00",
+        },
+        {
+          id: 5,
+          bti: "我是超级长的中文字段,那我要伤心了哦。",
+          type: 3,
+        },
       ],
     };
     this.todoColumns = [
@@ -263,53 +387,53 @@ class TimeDOM extends React.Component {
         title: '进展',
         dataIndex: 'cur',
         onFilter: (value, record) => record.cur.indexOf(value) === 0,
-        sorter: (a, b) =>( (a.cur/a.sum) - (b.cur/b.sum)),
+        sorter: (a, b) => ((a.cur / a.sum) - (b.cur / b.sum)),
         defaultSortOrder: 'ascend',
         key: 'cur',
-        render: (name, { changing,title,cur, sum,id }) => ([
-          (cur===0&&changing===0) && (
+        render: (name, { changing, title, cur, sum, id }) => ([
+          (cur === 0 && changing === 0) && (
             <ProgressBar animated striped variant="warning" now={100} label={`${title}囤积未使用`} />
           ),
-          (cur!==0&&changing===0&&sum!==100&&cur===sum) && (
+          (cur !== 0 && changing === 0 && sum !== 100 && cur === sum) && (
             <ProgressBar animated striped now={100} label={`${sum}*${title}已用完 超棒！`} />
           ),
-          (cur!==0&&changing===0&&sum===100&&cur===sum) && (
+          (cur !== 0 && changing === 0 && sum === 100 && cur === sum) && (
             <ProgressBar animated striped now={100} label={`一份${title}已用完 超棒！`} />
           ),
-          (cur!==0&&changing===0&&sum!==100&&(cur/sum*100)>10&&cur!==sum) && (
-            <ProgressBar animated striped variant="info" now={cur/sum*100} label={`${title} ${cur}/${sum}`} />
-            
+          (cur !== 0 && changing === 0 && sum !== 100 && (cur / sum * 100) > 10 && cur !== sum) && (
+            <ProgressBar animated striped variant="info" now={cur / sum * 100} label={`${title} ${cur}/${sum}`} />
+
           ),
-          (cur!==0&&changing===0&&sum===100&&cur>10&&cur!==sum) && (
+          (cur !== 0 && changing === 0 && sum === 100 && cur > 10 && cur !== sum) && (
             <ProgressBar animated striped variant="info" now={cur} label={`${title} ${cur}%`} />
           ),
-          (cur!==0&&changing===0&&sum!==100&&(cur/sum*100)<=10&&cur!==sum) && (
+          (cur !== 0 && changing === 0 && sum !== 100 && (cur / sum * 100) <= 10 && cur !== sum) && (
             <div>
               <ProgressBar>
-                <ProgressBar animated striped variant="info" now={cur/sum*100} label={`${cur}/${sum}`} key={1}/>
-                <ProgressBar now={100-cur/sum*100} variant="warning" label={`${title}`} key={2}/>
+                <ProgressBar animated striped variant="info" now={cur / sum * 100} label={`${cur}/${sum}`} key={1} />
+                <ProgressBar now={100 - cur / sum * 100} variant="warning" label={`${title}`} key={2} />
               </ProgressBar>
             </div>
           ),
-          (cur!==0&&changing===0&&sum===100&&cur<=10&&cur!==sum) && (
+          (cur !== 0 && changing === 0 && sum === 100 && cur <= 10 && cur !== sum) && (
             <div>
               <ProgressBar>
                 <ProgressBar animated striped variant="info" now={cur} label={`${cur}%`} key={1} />
-                <ProgressBar now={100-cur} variant="warning" label={`${title}`} key={2} />
+                <ProgressBar now={100 - cur} variant="warning" label={`${title}`} key={2} />
               </ProgressBar>
             </div>
-            
+
           ),
-          (changing===1) && (
+          (changing === 1) && (
             <div>
-              <Slider 
-              min={0}
-              max={sum}
-              defaultValue={cur} 
-              onChange={this.onStackChange}
-              tooltipVisible />
+              <Slider
+                min={0}
+                max={sum}
+                defaultValue={cur}
+                onChange={this.onStackChange}
+                tooltipVisible />
             </div>
-            
+
           ),
         ])
       },
@@ -318,32 +442,31 @@ class TimeDOM extends React.Component {
         dataIndex: 'done',
         key: 'done',
         width: '50px',
-        render: (name, { changing,id,cur,sum }) => ([
-            (cur===sum)&&(<Button
-              type="danger"
-              shape="circle"
-              onClick={() => this.deleteS(id)}
-            >
-              忘
-            </Button>),
-            (changing===0&&cur!==sum)&&(<Button
-              shape="circle"
-              onClick={() => this.ready(id,cur)}
-            >
-              改
-            </Button>),
-            (changing===1&&cur!==sum)&&(<Button
-              shape="circle"
-              type="primary"
-              onClick={() => this.update(id)}
-            >
-              定
-            </Button>)
-          
+        render: (name, { changing, id, cur, sum }) => ([
+          (cur === sum) && (<Button
+            type="danger"
+            shape="circle"
+            onClick={() => this.deleteS(id)}
+          >
+            忘
+          </Button>),
+          (changing === 0 && cur !== sum) && (<Button
+            shape="circle"
+            onClick={() => this.ready(id, cur)}
+          >
+            改
+          </Button>),
+          (changing === 1 && cur !== sum) && (<Button
+            shape="circle"
+            type="primary"
+            onClick={() => this.update(id)}
+          >
+            定
+          </Button>)
+
         ])
       },
     ];
-
   }
 
 
@@ -362,7 +485,7 @@ class TimeDOM extends React.Component {
     var collection = localStorage.getItem("todo");
     if (collection != null) {
       var data = JSON.parse(collection);
-      console.log(id-1);
+      console.log(id - 1);
       data[id - 1]["done"] = true;
     } else return;
     this.setState({ todoSource: data });
@@ -374,11 +497,11 @@ class TimeDOM extends React.Component {
     if (collection != null) {
       var data = JSON.parse(collection);
       var data_end = [];
-      for (var i=0;i<id-1;i++) {
+      for (var i = 0; i < id - 1; i++) {
         data_end.push(data[i]);
       }
-      for (var j=id;j<data.length;j++) {
-        data[j]["id"]=data[j]["id"]-1;
+      for (var j = id; j < data.length; j++) {
+        data[j]["id"] = data[j]["id"] - 1;
         data_end.push(data[j]);
       }
     } else return;
@@ -408,6 +531,13 @@ class TimeDOM extends React.Component {
     } else var data2 = [];
     console.log('data2:', data2);
     this.setState({ timelineSource: data2 });
+
+    var collection3 = localStorage.getItem("bulletins");
+    if (collection3 != null) {
+      var data3 = JSON.parse(collection3);
+    } else var data3 = [];
+    console.log('data3:', data3);
+    this.setState({ btilineSource: data3 });
   }
 
   clear() {
@@ -422,8 +552,8 @@ class TimeDOM extends React.Component {
   sclear() {
     var collection = localStorage.getItem("timeline");
     let tool = JSON.parse(collection);
-    if (tool != null&&tool.length>10) {
-      var data=tool.slice(tool.length-10,tool.length);
+    if (tool != null && tool.length > 10) {
+      var data = tool.slice(tool.length - 10, tool.length);
     } else {
       var data = JSON.parse(collection);
     }
@@ -431,13 +561,26 @@ class TimeDOM extends React.Component {
     this.setState({ timelineSource: data });
   }
 
-  ready = (id,cur) => {
+  bclear() {
+    var collection = localStorage.getItem("bulletins");
+    let tool = JSON.parse(collection);
+    if (tool != null) {
+      //if (tool != null && tool.length > 10) {
+      var data = [];
+    } else {
+      var data = JSON.parse(collection);
+    }
+    localStorage.setItem("bulletins", JSON.stringify(data));
+    this.setState({ btiSource: data });
+  }
+
+  ready = (id, cur) => {
     var collection = localStorage.getItem("stack");
     if (collection != null) {
       var data = JSON.parse(collection);
       data[id - 1]["changing"] = 1;
     } else return;
-    this.setState({ stackSource: data,new_cur:cur });
+    this.setState({ stackSource: data, new_cur: cur });
     localStorage.setItem("stack", JSON.stringify(data));
   }
 
@@ -446,28 +589,66 @@ class TimeDOM extends React.Component {
     this.setState({ new_cur: value });
   }
 
+  onTypeChange = value => {
+    console.log(value);
+    console.log(value.target.value)
+    this.setState({ cur_type: value.target.value });
+  }
+
+  handleModalOk = value => {
+    var tool = this.state.btilineSource;
+    var id = this.state.btiLineOnChange;
+    var index = tool.findIndex((line) => line.id === id);
+    tool[index].type = this.state.cur_type;
+    console.log(tool[index]);
+    this.setState({ btilineSource: tool, isModalVisible: false });
+    localStorage.setItem("bulletins", JSON.stringify(tool));
+  }
+
+  handleModalCancel = value => {
+    this.setState({ isModalVisible: false });
+  }
+
+  handleDeleteModalOk = value => {
+    var tool = this.state.btilineSource;
+    var id = this.state.btiLineOnChange;
+    var data_deleted = [];
+    for (var i = 0; i < id - 1; i++) {
+      data_deleted.push(tool[i]);
+    }
+    for (var j = id; j < tool.length; j++) {
+      tool[j]["id"] = tool[j]["id"] - 1;
+      data_deleted.push(tool[j]);
+    }
+    this.setState({ btilineSource: data_deleted, isDeleteModalVisible: false });
+    localStorage.setItem("bulletins", JSON.stringify(data_deleted));
+  }
+
+  handleDeleteModalCancel = value => {
+    this.setState({ isDeleteModalVisible: false });
+  }
 
   update = (id) => {
     var collection = localStorage.getItem("stack");
     var collection2 = localStorage.getItem("timeline");
     if (collection != null) {
       var data = JSON.parse(collection);
-      var log1=this.state.new_cur-data[id - 1]["cur"];
+      var log1 = this.state.new_cur - data[id - 1]["cur"];
       data[id - 1]["cur"] = this.state.new_cur;
       data[id - 1]["changing"] = 0;
       console.log(data);
     } else return;
-    if(data[id - 1]["cur"]===data[id - 1]["sum"]) {
-      var line=moment().format("MM-DD").toString()+" 超棒 "+data[id - 1]["title"]+"全部用完";
+    if (data[id - 1]["cur"] === data[id - 1]["sum"]) {
+      var line = moment().format("MM-DD").toString() + " 超棒 " + data[id - 1]["title"] + "全部用完";
       var data2 = JSON.parse(collection2);
       data2.push(line);
       localStorage.setItem("timeline", JSON.stringify(data2));
       this.setState({ timelineSource: data2 });
-    } else if(log1!==0) {
-      if(data[id - 1]["sum"]===100) {
-        var line=moment().format("MM-DD").toString()+" 消耗 "+log1+"%"+data[id - 1]["title"];
+    } else if (log1 !== 0) {
+      if (data[id - 1]["sum"] === 100) {
+        var line = moment().format("MM-DD").toString() + " 消耗 " + log1 + "%" + data[id - 1]["title"];
       } else {
-        var line=moment().format("MM-DD").toString()+" 消耗 "+log1+"/"+data[id - 1]["sum"]+data[id - 1]["title"];
+        var line = moment().format("MM-DD").toString() + " 消耗 " + log1 + "/" + data[id - 1]["sum"] + data[id - 1]["title"];
       }
       var data2 = JSON.parse(collection2);
       data2.push(line);
@@ -483,11 +664,11 @@ class TimeDOM extends React.Component {
     if (collection != null) {
       var data = JSON.parse(collection);
       var data_deleted = [];
-      for (var i=0;i<id-1;i++) {
+      for (var i = 0; i < id - 1; i++) {
         data_deleted.push(data[i]);
       }
-      for (var j=id;j<data.length;j++) {
-        data[j]["id"]=data[j]["id"]-1;
+      for (var j = id; j < data.length; j++) {
+        data[j]["id"] = data[j]["id"] - 1;
         data_deleted.push(data[j]);
       }
       console.log('data:', data_deleted);
@@ -496,9 +677,38 @@ class TimeDOM extends React.Component {
     localStorage.setItem("stack", JSON.stringify(data_deleted));
   }
 
+  changeType = (value) => {
+    console.log(value);
+    console.log(value.id + " type: " + value.type);
+    // let id;
+    // let newType = 3;
+    // var newBti = this.state.btilineSource;
+
+    this.setState({ isModalVisible: true, btiLineOnChange: value.id, cur_type: value.type });
+    // this.setState({ btilineSource: newBti });
+  }
+
+  deleteBti = (value) => {
+    this.setState({ isDeleteModalVisible: true, btiLineOnChange: value.id});
+  }
+
+  formatBtiTime = (value) => {
+    if(value===undefined) {
+      return null;
+    } else if (moment(value).subtract(1, 'days').format("MM-DD").toString() === moment().format("MM-DD").toString()) {
+      return '明天 ' + moment(value).format("HH:mm").toString();
+    } else if (moment(value).format("MM-DD").toString() === moment().format("MM-DD").toString()) {
+      return '今天 ' + moment(value).format("HH:mm").toString();
+    } else if (moment(value).format("MM-DD").toString() < moment().format("MM-DD").toString()) {
+      return '已过去的 ' + moment(value).format("HH:mm").toString();
+    } else {
+      return moment(value).format("HH:mm").toString();
+    }
+  }
+
   onFinish = (values) => {
     console.log(values);
-    if(values.sum!==undefined) {
+    if (values.sum !== undefined) {//-----sum-----用于tab2库存-----------
       console.log("处理库存部分");
       var collection = localStorage.getItem("stack");
       var collection2 = localStorage.getItem("timeline");
@@ -510,17 +720,17 @@ class TimeDOM extends React.Component {
       } else var data2 = [];
       console.log('data:', data);
       var seq = Object.keys(data).length;
-      var todo = { "id": seq + 1, "title": values.sdetail, "sum": parseInt(values.sum), "cur": 0, "changing":0 };
+      var todo = { "id": seq + 1, "title": values.sdetail, "sum": parseInt(values.sum), "cur": 0, "changing": 0 };
       data.push(todo);
-      var line=moment().format("MM-DD").toString()+" 加入 "+values.sdetail;
+      var line = moment().format("MM-DD").toString() + " 加入 " + values.sdetail;
       data2.push(line);
       console.log('data:', data);
       console.log(typeof (data));
       localStorage.setItem("stack", JSON.stringify(data));
       localStorage.setItem("timeline", JSON.stringify(data2));
-      this.setState({ stackSource: data,timelineSource:data2 });
+      this.setState({ stackSource: data, timelineSource: data2 });
       this.onReset();
-    } else {
+    } else if (values.bulletin === undefined) {//-----bti-----用于tab1时间-----------
       var collection = localStorage.getItem("todo");
       if (collection != null) {
         var data = JSON.parse(collection);
@@ -534,8 +744,22 @@ class TimeDOM extends React.Component {
       localStorage.setItem("todo", JSON.stringify(data));
       this.setState({ todoSource: data });
       this.onReset();
+    } else {//-----bti-----用于tab3子弹-----------
+      var collection3 = localStorage.getItem("bulletins");
+      if (collection3 != null) {
+        var data3 = JSON.parse(collection3);
+      } else var data3 = [];
+      console.log('data3:', data3);
+      var seq3 = Object.keys(data3).length;
+      var bti = { "id": seq3 + 1, "bti": values.bulletin, "type": 0, "ddl": values.btiTime };
+      data3.push(bti);
+      console.log('data3:', data3);
+      //console.log(typeof (data3));
+      localStorage.setItem("bulletins", JSON.stringify(data3));
+      this.setState({ btilineSource: data3 });
+      this.onReset();
     }
-    
+
   }
 
   onFinishFailed(errorInfo) {
@@ -570,8 +794,8 @@ class TimeDOM extends React.Component {
             message.error("Error！该浏览器不允许通知!" + old_mins + "分" + old_ss + "秒计时时间到");
           }
         } else {
-            Toast.fail("Toast！该浏览器不允许通知!" + old_mins + "分" + old_ss + "秒计时时间到", 2);
-            message.error("Error！该浏览器不允许通知!" + old_mins + "分" + old_ss + "秒计时时间到");
+          Toast.fail("Toast！该浏览器不允许通知!" + old_mins + "分" + old_ss + "秒计时时间到", 2);
+          message.error("Error！该浏览器不允许通知!" + old_mins + "分" + old_ss + "秒计时时间到");
         }
         this.setState({
           counting: false,
@@ -595,6 +819,8 @@ class TimeDOM extends React.Component {
       console.log(this.state.mins, this.state.ss);
     }
   }
+
+
 
   start = () => {
     console.log("start!");
@@ -659,7 +885,7 @@ class TimeDOM extends React.Component {
         />
         <WingBlank size="lg">
           <Tabs tabs={tabs2}
-            initialPage={0}
+            initialPage={2}
             renderTab={tab => <span>{tab.title}</span>}
           >
             <div style={{ display: 'block', alignItems: 'center', justifyContent: 'center', height: '100%', backgroundColor: '#fff' }}>
@@ -851,7 +1077,7 @@ class TimeDOM extends React.Component {
                         <Form.Item>
                           <Button type="primary" htmlType="submit" block>
                             添加
-                        </Button>
+                          </Button>
                         </Form.Item>
                       </Col>
                     </Row>
@@ -868,7 +1094,7 @@ class TimeDOM extends React.Component {
                     type="primary"
                   >
                     清空缓存
-                </Button>
+                  </Button>
                 </Card.Body>
 
 
@@ -918,7 +1144,7 @@ class TimeDOM extends React.Component {
                         <Form.Item>
                           <Button type="primary" htmlType="submit" block>
                             添加
-                        </Button>
+                          </Button>
                         </Form.Item>
                       </Col>
                     </Row>
@@ -927,36 +1153,136 @@ class TimeDOM extends React.Component {
                   </Form>
 
                   <Flex justify="center"  >
-                    <Table dataSource={this.state.stackSource} columns={this.stackColumns} style={{ width: '100%'}}/>
+                    <Table dataSource={this.state.stackSource} columns={this.stackColumns} style={{ width: '100%' }} />
                   </Flex>
 
                   <Timeline reverse={this.state.reverse}>
-                  <MyTimeLine
-                    source={this.state.timelineSource}
-                  />
-                </Timeline>
+                    <MyTimeLine
+                      source={this.state.timelineSource}
+                    />
+                  </Timeline>
 
                   <Button
                     onClick={() => this.sclear()}
                     type="primary"
                   >
                     精简缓存
-                </Button>
-                
+                  </Button>
+
 
                 </Card.Body>
 
 
               </Card>
 
-              
+
+
+            </div>
+
+            <div style={{ display: 'block', alignItems: 'center', justifyContent: 'center', height: '100%', backgroundColor: '#fff' }}>
+              <Card>
+                <Card.Body>
+                  <Timeline
+                    mode={'left'}
+                  >
+                    {this.state.btilineSource.map((line) =>
+                      <Timeline.Item
+                        dot={<button class="transButton" onClick={() => this.changeType(line)} ><TypeIcon value={line.type} /></button>}
+                        label={this.formatBtiTime(line.ddl)}
+                      >
+                        {line.bti}
+                        {<button class="transButton" onClick={() => this.deleteBti(line)} ><CloseCircleTwoTone /></button>}
+                      </Timeline.Item>
+                    )}
+                  </Timeline>
+                  <Timeline
+                  >
+                    <MyBtiLine
+                      source={this.state.btilineSource}
+                    />
+                  </Timeline>
+
+                  <Modal title="修改事件种类" visible={this.state.isModalVisible} onOk={this.handleModalOk} onCancel={this.handleModalCancel}>
+                    <Radio.Group onChange={this.onTypeChange} value={this.state.cur_type}>
+                      {types.map((type) => <Radio value={type.NO} name={type.NO}>{type.title + ' '}<TypeIcon value={type.NO} /></Radio>)}
+                    </Radio.Group>
+                  </Modal>
+                  <Modal 
+                  title="确定删除吗？"
+                  visible={this.state.isDeleteModalVisible} 
+                  onOk={this.handleDeleteModalOk} 
+                  onCancel={this.handleDeleteModalCancel}>
+                  </Modal>
+                  <WhiteSpace />
+                  <Form
+                    onFinish={this.onFinish}
+                    onFinishFailed={this.onFinishFailed}
+                    labelCol={{ span: 8 }}
+                    wrapperCol={{ span: 16 }}
+                    ref={this.formRef}
+                    name="basic"
+                  >
+                    <Form.Item
+                      name="bulletin"
+                      placeholder="添加子弹事件"
+                      rules={[
+                        {
+                          required: true,
+                          message: '内容描述不可为空',
+                        },
+                      ]}
+                    >
+                      <Input.TextArea rows={4} />
+                    </Form.Item>
+                    <Row>
+                      <Col span={16}>
+                        <Form.Item
+                          name="btiTime"
+                          placeholder="子弹事件失效时间"
+                        >
+                          <DatePicker
+                            showTime={{ format: 'MM-DD HH:mm' }}
+                            format="MM-DD HH:mm"
+                          />
+                        </Form.Item>
+                      </Col>
+
+                      <Col span={8}>
+                        <Form.Item>
+                          <Button type="primary" htmlType="submit">
+                            + 子弹便签
+                          </Button>
+                        </Form.Item>
+                      </Col>
+                    </Row>
+
+
+
+                    
+
+
+
+                  </Form>
+                  <WhiteSpace />
+                  <Button
+                    danger
+                    onClick={() => this.bclear()}
+                    type="primary"
+                  >
+                    慎 删除全部子弹便签
+                  </Button>
+
+                </Card.Body>
+              </Card>
+
+
 
             </div>
           </Tabs>
 
 
 
-          
+
         </WingBlank>
       </div>
     )

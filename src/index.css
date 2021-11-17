@@ -14,3 +14,29 @@ code {
 .site-page-header {
   border: 1px solid rgb(235, 237, 240);
 }
+
+.transButton {
+  width: 20px;
+  position: relative;
+  left: -5px;
+  background-color: transparent;
+  border-color: transparent;
+}
+
+.ant-timeline-item {
+  position: relative;
+  margin: 0;
+  padding-bottom: 20px
+;
+  font-size: 14px;
+  list-style: none;
+}
+
+.ant-timeline-item-content {
+  position: relative;
+  top: -4.5px;
+  margin: 0 0 0 17px;/* 上右下左 */
+  word-break: break-word;
+  font-size: 13px;
+  color:rgb(85, 85, 85);
+}
