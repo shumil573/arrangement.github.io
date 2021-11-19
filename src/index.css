@@ -26,8 +26,7 @@ code {
 .ant-timeline-item {
   position: relative;
   margin: 0;
-  padding-bottom: 20px
-;
+  padding-bottom: 10px;
   font-size: 14px;
   list-style: none;
 }
@@ -39,4 +38,18 @@ code {
   word-break: break-word;
   font-size: 13px;
   color:rgb(85, 85, 85);
+}
+
+.ant-timeline-item-label {
+  position: relative;
+  left: 2px;
+}
+
+.xtimelineP {
+  text-decoration: line-through;
+  color:slategrey;
+}
+
+.normalP {
+  color:black;
 }

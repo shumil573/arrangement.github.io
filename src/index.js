@@ -5,25 +5,15 @@ import moment from 'moment';
 import reportWebVitals from './reportWebVitals';
 import 'antd-mobile/dist/antd-mobile.css';
 import { Toast, Card, Flex, Icon, Tabs, WhiteSpace, Badge, WingBlank, TextareaItem } from 'antd-mobile'
-import { PageHeader, Table, Radio, DatePicker, Modal, message, Input, Form, Button, Row, Col, Slider, Timeline } from 'antd';
+import { PageHeader, Table, Radio, DatePicker, Modal, message, Input, Form, Button, Row, Col, Slider, Timeline, Tooltip } from 'antd';
 import {
   CloseCircleTwoTone
 } from '@ant-design/icons';
-import { createFromIconfontCN } from '@ant-design/icons';
 import 'bootstrap/dist/css/bootstrap.css'
 import { ProgressBar } from "react-bootstrap";
 import TypeIcon from './typeIcon';
-import { typeParameter } from '@babel/types';
-
-//import { Toast } from 'bootstrap.esm.min.js'
 
 const { RangePicker } = DatePicker;
-
-const tabs = [
-  { title: <Badge text={'3'}>First Tab</Badge> },
-  { title: <Badge text={'今日(20)'}>Second Tab</Badge> },
-  { title: <Badge dot>Third Tab</Badge> },
-];
 
 const tabs2 = [
   { title: '时间', sub: '1' },
@@ -46,9 +36,17 @@ const types = [
   { title: '生活小窍门', NO: 11 },
 ]
 
-const IconFont = createFromIconfontCN({
-  scriptUrl: '//at.alicdn.com/t/font_2928730_zkgv1kj04ua.js',
-});
+const secList = [
+  10, 15, -10, -15
+]
+
+const minPlusList = [
+  1,5,10
+]
+
+const minMinusList = [
+  -1,-5,-10
+]
 
 function PlusSec(props) {
   return (
@@ -179,22 +177,10 @@ class MyTimeLine extends React.Component {
   render() {
     var tool = this.props.source.slice();
     return tool.reverse().map((line) => this.renderMytlitem(line));
-
   }
 }
 
 class MyBtiLine extends React.Component {
-  constructor(props) {
-    super(props);
-    this.handleType = this.handleType.bind(this);
-  }
-  handleType(id) {
-    // let btilineSource=this.state.btilineSource;
-    // var newType=7;
-    console.log(id + '当前，修改类型为7');
-    // btilineSource[id-1].type=newType;
-    // this.setState({btilineSource});
-  }
   renderMybtiitem(line) {
     if (line.ddl == null) {
       return (
@@ -204,36 +190,17 @@ class MyBtiLine extends React.Component {
           {line.bti}
         </Timeline.Item>
       )
-    }
-    if (moment(line.ddl).subtract(1, 'days').format("MM-DD").toString() === moment().format("MM-DD").toString()) {
-      return (
-        <Timeline.Item
-          dot={<button class="transButton" onClick={() => this.handleType(line.id)} ><TypeIcon value={line.type} /></button>}
-          label={'--\x20\x20\x20明天  ' + moment(line.ddl).format("HH:mm").toString()}
-        >
+    } else return (
+      <Timeline.Item
+        dot={<button class="transButton" ><TypeIcon value={line.type} /></button>}
+        label={'-\xa0\xa0\xa0' + this.props.formatBtiTime(line.ddl)}
+      >
+        {<p class={(line.type === 4) ? "xtimelineP" : "normalP"} >
           {line.bti}
-        </Timeline.Item>
-      )
-    } else if (moment(line.ddl).format("MM-DD").toString() === moment().format("MM-DD").toString()) {
-      return (
-        <Timeline.Item
-          dot={<button class="transButton" onClick={() => this.handleType(line.id)} ><TypeIcon value={line.type} /></button>}
-          label={'--\x20\x20\x20今天  ' + moment(line.ddl).format("HH:mm").toString()}
-        // style={{color:"red"}}
-        >
-          {<div color="gray">{line.bti}</div>}
-        </Timeline.Item>
-      )
-    } else {
-      return (
-        <Timeline.Item
-          dot={<button class="transButton" onClick={() => this.handleType(line.id)} ><TypeIcon value={line.type} /></button>}
-          label={'--\x20\x20' + moment(line.ddl).format("MM-DD HH:mm").toString()}
-        >
-          {line.bti}
-        </Timeline.Item>
-      )
-    }
+          <button class="transButton" ><CloseCircleTwoTone /></button>
+        </p>}
+      </Timeline.Item>
+    )
   }
 
   render() {
@@ -285,59 +252,36 @@ class TimeDOM extends React.Component {
       end: 0,
       type: 0,
       cur_type: 0,
+      mode: 'left',
       cached: false,
       reverse: false,
       isModalVisible: false,
-      isDeleteModalVisible:false,
+      isDeleteModalVisible: false,
       btiLineOnChange: null,
       todoSource: [],
       stackSource: [],
       btiSource: [],
-      timelineSource: [
-        "加入 夏黑葡萄 ",
-        "消耗 1/7 夏黑葡萄",
-        "消耗 2/3 矿泉水",
-      ],
-      //var bti = { "id": seq + 1, "bti": values.bulletin, "type": 0, "ddl": values.btiTime };
-
-      btilineSource: [
-        {
-          id: 1,
-          bti: "drink water",
-          type: 0,
-          btiTime: "11-16 14:20",
-        },
-        {
-          id: 2,
-          bti: "like a boss",
-          type: 2,
-          btiTime: "11-15 23:59",
-        },
-        {
-          id: 3,
-          bti: "我是超级长的中文字段，我用来演示分行的情况，会不会自动分行呢？？？假设不可以那我要伤心了哦。",
-          type: 4,
-          btiTime: "&nbsp;11-05 10:00",
-        },
-        {
-          id: 4,
-          bti: "我是超级长的中文字段，我用来演示分行的情况，会不会自动分行呢？？？假设不可以那我要伤心了哦。",
-          type: 99,
-          btiTime: "11-14 10:00",
-        },
-        {
-          id: 5,
-          bti: "我是超级长的中文字段,那我要伤心了哦。",
-          type: 3,
-        },
-      ],
+      timelineSource: [],
+      btilineSource: [],
     };
     this.todoColumns = [
       {
         title: 'todo',
         dataIndex: 'title',
         key: 'title',
-        ellipsis: true,
+        ellipsis: {
+          showTitle: false,
+        },
+        render: (name, { title, done }) => ([
+          (!done && <Tooltip placement="topLeft" title={title}>
+            {title}
+          </Tooltip>),
+          (done && <Tooltip placement="topLeft" title={title}>
+            {
+              <p class="xtimelineP">{title}</p>
+            }
+          </Tooltip>)
+        ]),
       },
       {
         title: '死线',
@@ -345,15 +289,7 @@ class TimeDOM extends React.Component {
         key: 'ddl',
         width: '70px',
         render: (name, { ddl }) => ([
-          (moment(ddl).subtract(1, 'days').format("MM-DD").toString() === moment().format("MM-DD").toString()) && (
-            '明天' + moment(ddl).format("HH:mm").toString()
-          ),
-          (moment(ddl).format("MM-DD").toString() === moment().format("MM-DD").toString()) && (
-            '今天' + moment(ddl).format("HH:mm").toString()
-          ),
-          (moment(ddl).subtract(1, 'days').format("MM-DD").toString() > moment().format("MM-DD").toString()) && (
-            moment(ddl).format("MM-DD HH:mm").toString()
-          )
+           this.formatBtiTime(ddl)
         ])
       },
       {
@@ -400,14 +336,14 @@ class TimeDOM extends React.Component {
           (cur !== 0 && changing === 0 && sum === 100 && cur === sum) && (
             <ProgressBar animated striped now={100} label={`一份${title}已用完 超棒！`} />
           ),
-          (cur !== 0 && changing === 0 && sum !== 100 && (cur / sum * 100) > 10 && cur !== sum) && (
+          (cur !== 0 && changing === 0 && sum !== 100 && (cur / sum * 100) > 25 && cur !== sum) && (
             <ProgressBar animated striped variant="info" now={cur / sum * 100} label={`${title} ${cur}/${sum}`} />
 
           ),
-          (cur !== 0 && changing === 0 && sum === 100 && cur > 10 && cur !== sum) && (
+          (cur !== 0 && changing === 0 && sum === 100 && cur > 25 && cur !== sum) && (
             <ProgressBar animated striped variant="info" now={cur} label={`${title} ${cur}%`} />
           ),
-          (cur !== 0 && changing === 0 && sum !== 100 && (cur / sum * 100) <= 10 && cur !== sum) && (
+          (cur !== 0 && changing === 0 && sum !== 100 && (cur / sum * 100) <= 25 && cur !== sum) && (
             <div>
               <ProgressBar>
                 <ProgressBar animated striped variant="info" now={cur / sum * 100} label={`${cur}/${sum}`} key={1} />
@@ -415,7 +351,7 @@ class TimeDOM extends React.Component {
               </ProgressBar>
             </div>
           ),
-          (cur !== 0 && changing === 0 && sum === 100 && cur <= 10 && cur !== sum) && (
+          (cur !== 0 && changing === 0 && sum === 100 && cur <= 25 && cur !== sum) && (
             <div>
               <ProgressBar>
                 <ProgressBar animated striped variant="info" now={cur} label={`${cur}%`} key={1} />
@@ -595,6 +531,12 @@ class TimeDOM extends React.Component {
     this.setState({ cur_type: value.target.value });
   }
 
+  onModeChange = value => {
+    console.log(value);
+    console.log(value.target.value)
+    this.setState({ mode: value.target.value });
+  }
+
   handleModalOk = value => {
     var tool = this.state.btilineSource;
     var id = this.state.btiLineOnChange;
@@ -680,29 +622,24 @@ class TimeDOM extends React.Component {
   changeType = (value) => {
     console.log(value);
     console.log(value.id + " type: " + value.type);
-    // let id;
-    // let newType = 3;
-    // var newBti = this.state.btilineSource;
-
     this.setState({ isModalVisible: true, btiLineOnChange: value.id, cur_type: value.type });
-    // this.setState({ btilineSource: newBti });
   }
 
   deleteBti = (value) => {
-    this.setState({ isDeleteModalVisible: true, btiLineOnChange: value.id});
+    this.setState({ isDeleteModalVisible: true, btiLineOnChange: value.id });
   }
 
   formatBtiTime = (value) => {
-    if(value===undefined) {
+    if (value === undefined || !moment(value).isValid()||!value) {
       return null;
-    } else if (moment(value).subtract(1, 'days').format("MM-DD").toString() === moment().format("MM-DD").toString()) {
+    } else if (moment(value).subtract(1, 'days').format("YYYY MM-DD").toString() === moment().format("YYYY MM-DD").toString()) {
       return '明天 ' + moment(value).format("HH:mm").toString();
-    } else if (moment(value).format("MM-DD").toString() === moment().format("MM-DD").toString()) {
+    } else if (moment(value).format("YYYY MM-DD").toString() === moment().format("YYYY MM-DD").toString()) {
       return '今天 ' + moment(value).format("HH:mm").toString();
-    } else if (moment(value).format("MM-DD").toString() < moment().format("MM-DD").toString()) {
-      return '已过去的 ' + moment(value).format("HH:mm").toString();
+    } else if (moment(value).format("YYYY MM-DD").toString() < moment().format("YYYY MM-DD").toString()) {
+      return '过去 ' + moment(value).format("MM-DD HH:mm").toString();
     } else {
-      return moment(value).format("HH:mm").toString();
+      return moment(value).format("MM-DD HH:mm").toString();
     }
   }
 
@@ -806,7 +743,6 @@ class TimeDOM extends React.Component {
     }
   }
 
-
   handleClick(i) {
     let sum = this.state.timeSum;
     sum = (sum + i >= 0) ? sum + i : 0;
@@ -819,8 +755,6 @@ class TimeDOM extends React.Component {
       console.log(this.state.mins, this.state.ss);
     }
   }
-
-
 
   start = () => {
     console.log("start!");
@@ -898,73 +832,41 @@ class TimeDOM extends React.Component {
                 />
                 <Card.Body>
                   <Flex justify="center">
-                    <Flex.Item>
-                      <SecTimer
-                        time={10}
-                        onClick={i => this.handleClick(i)}
-                      />
-                    </Flex.Item>
-                    <Flex.Item>
-                      <SecTimer
-                        time={15}
-                        onClick={i => this.handleClick(i)}
-                      />
-                    </Flex.Item>
-                  </Flex>
-                  <Flex justify="center" >
-                    <Flex.Item>
-                      <SecTimer
-                        time={-10}
-                        onClick={i => this.handleClick(i)}
-                      />
-                    </Flex.Item>
-                    <Flex.Item>
-                      <SecTimer
-                        time={-15}
-                        onClick={i => this.handleClick(i)}
-                      />
-                    </Flex.Item>
+                    {
+                      secList.map((sec) =>
+                        <Flex.Item>
+                          <SecTimer
+                            time={sec}
+                            onClick={i => this.handleClick(i)}
+                          />
+                        </Flex.Item>
+                      )
+                    }
                   </Flex>
                   <WhiteSpace />
                   <Flex justify="center">
-                    <Flex.Item>
-                      <MinTimer
-                        time={1}
-                        onClick={i => this.handleClick(i)}
-                      />
-                    </Flex.Item>
-                    <Flex.Item>
-                      <MinTimer
-                        time={5}
-                        onClick={i => this.handleClick(i)}
-                      />
-                    </Flex.Item>
-                    <Flex.Item>
-                      <MinTimer
-                        time={10}
-                        onClick={i => this.handleClick(i)}
-                      />
-                    </Flex.Item>
+                  {
+                      minPlusList.map((min) =>
+                        <Flex.Item>
+                          <MinTimer
+                            time={min}
+                            onClick={i => this.handleClick(i)}
+                          />
+                        </Flex.Item>
+                      )
+                    }
                   </Flex>
                   <Flex justify="center" >
-                    <Flex.Item>
-                      <MinTimer
-                        time={-1}
-                        onClick={i => this.handleClick(i)}
-                      />
-                    </Flex.Item>
-                    <Flex.Item>
-                      <MinTimer
-                        time={-5}
-                        onClick={i => this.handleClick(i)}
-                      />
-                    </Flex.Item>
-                    <Flex.Item>
-                      <MinTimer
-                        time={-10}
-                        onClick={i => this.handleClick(i)}
-                      />
-                    </Flex.Item>
+                  {
+                      minMinusList.map((min) =>
+                        <Flex.Item>
+                          <MinTimer
+                            time={min}
+                            onClick={i => this.handleClick(i)}
+                          />
+                        </Flex.Item>
+                      )
+                    }
                   </Flex>
 
                   <WhiteSpace />
@@ -1004,10 +906,7 @@ class TimeDOM extends React.Component {
                             </Button>
                           </Col>
                         </Row>
-
-
                       </div>
-
                     )
                   }
                   {
@@ -1022,7 +921,6 @@ class TimeDOM extends React.Component {
                           </Col>
                         </Row>
                       </div>
-
                     )
                   }
                 </Card.Body>
@@ -1082,7 +980,6 @@ class TimeDOM extends React.Component {
                       </Col>
                     </Row>
 
-
                   </Form>
 
                   <Flex justify="center">
@@ -1096,7 +993,6 @@ class TimeDOM extends React.Component {
                     清空缓存
                   </Button>
                 </Card.Body>
-
 
               </Card>
             </div>
@@ -1169,49 +1065,54 @@ class TimeDOM extends React.Component {
                     精简缓存
                   </Button>
 
-
                 </Card.Body>
 
-
               </Card>
-
-
-
             </div>
 
             <div style={{ display: 'block', alignItems: 'center', justifyContent: 'center', height: '100%', backgroundColor: '#fff' }}>
               <Card>
                 <Card.Body>
-                  <Timeline
-                    mode={'left'}
-                  >
-                    {this.state.btilineSource.map((line) =>
-                      <Timeline.Item
+                  {
+                    (this.state.mode !== "null") && (<Timeline
+                      mode={this.state.mode}
+                    >
+                      {this.state.btilineSource.map((line) =>
+                      (<Timeline.Item
                         dot={<button class="transButton" onClick={() => this.changeType(line)} ><TypeIcon value={line.type} /></button>}
                         label={this.formatBtiTime(line.ddl)}
                       >
-                        {line.bti}
-                        {<button class="transButton" onClick={() => this.deleteBti(line)} ><CloseCircleTwoTone /></button>}
-                      </Timeline.Item>
-                    )}
-                  </Timeline>
-                  <Timeline
-                  >
-                    <MyBtiLine
-                      source={this.state.btilineSource}
-                    />
-                  </Timeline>
+                        {<p class={(line.type === 4) ? "xtimelineP" : "normalP"} >
+                          {line.bti}
+                          <button class="transButton" onClick={() => this.deleteBti(line)} ><CloseCircleTwoTone /></button>
+                        </p>}
+                        { }
+                      </Timeline.Item>)
+                      )}
+                    </Timeline>)
+                  }
+                  {
+                    (this.state.mode === "null") && (
+                      <Timeline
+                      >
+                        <MyBtiLine
+                          source={this.state.btilineSource}
+                          formatBtiTime={(value) => this.formatBtiTime(value)}
+                        />
+                      </Timeline>
+                    )
+                  }
 
                   <Modal title="修改事件种类" visible={this.state.isModalVisible} onOk={this.handleModalOk} onCancel={this.handleModalCancel}>
                     <Radio.Group onChange={this.onTypeChange} value={this.state.cur_type}>
                       {types.map((type) => <Radio value={type.NO} name={type.NO}>{type.title + ' '}<TypeIcon value={type.NO} /></Radio>)}
                     </Radio.Group>
                   </Modal>
-                  <Modal 
-                  title="确定删除吗？"
-                  visible={this.state.isDeleteModalVisible} 
-                  onOk={this.handleDeleteModalOk} 
-                  onCancel={this.handleDeleteModalCancel}>
+                  <Modal
+                    title="确定删除吗？"
+                    visible={this.state.isDeleteModalVisible}
+                    onOk={this.handleDeleteModalOk}
+                    onCancel={this.handleDeleteModalCancel}>
                   </Modal>
                   <WhiteSpace />
                   <Form
@@ -1256,14 +1157,20 @@ class TimeDOM extends React.Component {
                       </Col>
                     </Row>
 
-
-
-                    
-
-
-
                   </Form>
                   <WhiteSpace />
+                  <Radio.Group
+                    onChange={this.onModeChange}
+                    value={this.state.mode}
+                    style={{
+                      marginBottom: 20,
+                    }}
+                  >
+                    <Radio value="left">时间在左</Radio>
+                    <Radio value="right">时间在右</Radio>
+                    <Radio value="alternate">轮流</Radio>
+                    <Radio value="null">靠边（无法修改和删除）</Radio>
+                  </Radio.Group>
                   <Button
                     danger
                     onClick={() => this.bclear()}
@@ -1274,15 +1181,8 @@ class TimeDOM extends React.Component {
 
                 </Card.Body>
               </Card>
-
-
-
             </div>
           </Tabs>
-
-
-
-
         </WingBlank>
       </div>
     )
