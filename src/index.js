@@ -257,10 +257,10 @@ class TimeDOM extends React.Component {
       reverse: false,
       isModalVisible: false,
       isDeleteModalVisible: false,
+      isDeleteAllModalVisible: false,
       btiLineOnChange: null,
       todoSource: [],
       stackSource: [],
-      btiSource: [],
       timelineSource: [],
       btilineSource: [],
     };
@@ -501,13 +501,10 @@ class TimeDOM extends React.Component {
     var collection = localStorage.getItem("bulletins");
     let tool = JSON.parse(collection);
     if (tool != null) {
-      //if (tool != null && tool.length > 10) {
       var data = [];
-    } else {
-      var data = JSON.parse(collection);
     }
     localStorage.setItem("bulletins", JSON.stringify(data));
-    this.setState({ btiSource: data });
+    this.setState({ btilineSource: data });
   }
 
   ready = (id, cur) => {
@@ -566,8 +563,17 @@ class TimeDOM extends React.Component {
     localStorage.setItem("bulletins", JSON.stringify(data_deleted));
   }
 
+  handleDeleteAllModalOk = value => {
+    this.bclear();
+    this.setState({ isDeleteAllModalVisible: false });
+  }
+
   handleDeleteModalCancel = value => {
     this.setState({ isDeleteModalVisible: false });
+  }
+
+  handleDeleteAllModalCancel = value => {
+    this.setState({ isDeleteAllModalVisible: false });
   }
 
   update = (id) => {
@@ -627,6 +633,10 @@ class TimeDOM extends React.Component {
 
   deleteBti = (value) => {
     this.setState({ isDeleteModalVisible: true, btiLineOnChange: value.id });
+  }
+
+  deleteAllBti = () => {
+    this.setState({ isDeleteAllModalVisible: true});
   }
 
   formatBtiTime = (value) => {
@@ -942,7 +952,7 @@ class TimeDOM extends React.Component {
                     onFinish={this.onFinish}
                     onFinishFailed={this.onFinishFailed}
                     ref={this.formRef}
-                    name="basic"
+                    name="time"
                   >
 
                     <Row>
@@ -1004,7 +1014,7 @@ class TimeDOM extends React.Component {
                     onFinish={this.onFinish}
                     onFinishFailed={this.onFinishFailed}
                     ref={this.formRef}
-                    name="basic"
+                    name="stack"
                   >
 
                     <Row>
@@ -1114,6 +1124,12 @@ class TimeDOM extends React.Component {
                     onOk={this.handleDeleteModalOk}
                     onCancel={this.handleDeleteModalCancel}>
                   </Modal>
+                  <Modal
+                    title="确定删除全部子弹便签吗？"
+                    visible={this.state.isDeleteAllModalVisible}
+                    onOk={this.handleDeleteAllModalOk}
+                    onCancel={this.handleDeleteAllModalCancel}>
+                  </Modal>
                   <WhiteSpace />
                   <Form
                     onFinish={this.onFinish}
@@ -1121,7 +1137,7 @@ class TimeDOM extends React.Component {
                     labelCol={{ span: 8 }}
                     wrapperCol={{ span: 16 }}
                     ref={this.formRef}
-                    name="basic"
+                    name="bullet"
                   >
                     <Form.Item
                       name="bulletin"
@@ -1173,7 +1189,7 @@ class TimeDOM extends React.Component {
                   </Radio.Group>
                   <Button
                     danger
-                    onClick={() => this.bclear()}
+                    onClick={() => this.deleteAllBti()}
                     type="primary"
                   >
                     慎 删除全部子弹便签
