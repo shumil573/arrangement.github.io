@@ -4,14 +4,19 @@ import './index.css';
 import moment from 'moment';
 import reportWebVitals from './reportWebVitals';
 import 'antd-mobile/dist/antd-mobile.css';
-import { Toast, Card, Flex, Icon, Tabs, WhiteSpace, Badge, WingBlank, TextareaItem } from 'antd-mobile'
+import { Toast, Card, Flex, Tabs, WhiteSpace, WingBlank, } from 'antd-mobile'
 import { PageHeader, Table, Radio, DatePicker, Modal, message, Input, Form, Button, Row, Col, Slider, Timeline, Tooltip } from 'antd';
 import {
-  CloseCircleTwoTone
+  CloseCircleTwoTone, createFromIconfontCN
 } from '@ant-design/icons';
 import 'bootstrap/dist/css/bootstrap.css'
 import { ProgressBar } from "react-bootstrap";
 import TypeIcon from './typeIcon';
+
+
+const IconFont = createFromIconfontCN({
+  scriptUrl: '//at.alicdn.com/t/font_2928730_c0q7n33ntiq.js',
+});
 
 const { RangePicker } = DatePicker;
 
@@ -46,6 +51,10 @@ const minPlusList = [
 
 const minMinusList = [
   -1,-5,-10
+]
+
+const addTypeList = [
+  1,2,3,4,5,6,7,8,10,12,15,16,18,20,50
 ]
 
 function PlusSec(props) {
@@ -187,7 +196,10 @@ class MyBtiLine extends React.Component {
         <Timeline.Item
           dot={<TypeIcon value={line.type} />}
         >
+          {<p class={(line.type === 4) ? "xtimelineP" : "normalP"} >
           {line.bti}
+          <button class="transButton" ><CloseCircleTwoTone /></button>
+        </p>}
         </Timeline.Item>
       )
     } else return (
@@ -252,10 +264,12 @@ class TimeDOM extends React.Component {
       end: 0,
       type: 0,
       cur_type: 0,
+      addingSum:0,
       mode: 'left',
       cached: false,
       reverse: false,
       isModalVisible: false,
+      isAddStackModalVisible:false,
       isDeleteModalVisible: false,
       isDeleteAllModalVisible: false,
       btiLineOnChange: null,
@@ -378,7 +392,19 @@ class TimeDOM extends React.Component {
         dataIndex: 'done',
         key: 'done',
         width: '50px',
-        render: (name, { changing, id, cur, sum }) => ([
+        render: (name, { changing, id, cur, sum, pinned }) => ([
+          (pinned===true)&&(<Button
+            shape="circle"
+            onClick={() => this.pinAndAddS(id)}
+          >
+            <IconFont style={{ color: "green", fontSize:"20px",position: "relative",top: "-3.8px" }} type="icon-cangku_kucunxiangqing"></IconFont>
+          </Button>),
+          (pinned!==true)&&(<Button
+            shape="circle"
+            onClick={() => this.pinS(id)}
+          >
+            <IconFont style={{ color: "#6c757d", fontSize:"20px",position: "relative",top: "-3.8px" }} type="icon-dingzhu"></IconFont>
+          </Button>),
           (cur === sum) && (<Button
             type="danger"
             shape="circle"
@@ -534,6 +560,43 @@ class TimeDOM extends React.Component {
     this.setState({ mode: value.target.value });
   }
 
+  handleAddModalOk = value => {
+    var id=this.state.stackOnAdding;
+    var collection = localStorage.getItem("stack");
+    console.log("handle add中:");
+    if (collection != null) {
+      var data = JSON.parse(collection);
+      var data_added = [];
+      for (var i = 0; i < id - 1; i++) {
+        data_added.push(data[i]);
+      }
+      var tool=data[ id - 1];
+      tool["sum"]=tool["sum"]+this.state.addingSum;
+      data_added.push(tool);
+      for (var j = id; j < data.length; j++) {
+        data[j]["id"] = data[j]["id"] - 1;
+        data_added.push(data[j]);
+      }
+      console.log('data:', data_added);
+    } else return;
+    this.setState({ stackSource: data_added });
+    localStorage.setItem("stack", JSON.stringify(data_added));
+
+
+    this.setState({ isAddStackModalVisible: false,addingSum:0 });
+  }
+
+  handleAddModalCancel = value => {
+    this.setState({ isAddStackModalVisible: false,addingSum:0 });
+  }
+
+  handleAddTypeClick= i => {
+    console.log(i);
+    var tool=Number(i.target.innerHTML);
+    console.log(tool);
+    this.setState({ addingSum: tool });
+  }
+
   handleModalOk = value => {
     var tool = this.state.btilineSource;
     var id = this.state.btiLineOnChange;
@@ -624,6 +687,35 @@ class TimeDOM extends React.Component {
     this.setState({ stackSource: data_deleted });
     localStorage.setItem("stack", JSON.stringify(data_deleted));
   }
+
+  pinS = (id) => {
+    console.log("pinS");
+    var collection = localStorage.getItem("stack");
+    if (collection != null) {
+      var data = JSON.parse(collection);
+      var data_pinned = [];
+      for (var i = 0; i < id - 1; i++) {
+        data_pinned.push(data[i]);
+      }
+      //对第ID个做PIN处理
+      var tool=data[ id - 1];
+      tool["pinned"]=true;
+      data_pinned.push(tool);
+      for (var j = id; j < data.length; j++) {
+        data[j]["id"] = data[j]["id"] - 1;
+        data_pinned.push(data[j]);
+      }
+      console.log('data:', data_pinned);
+    } else return;
+    this.setState({ stackSource: data_pinned });
+    localStorage.setItem("stack", JSON.stringify(data_pinned));
+  }
+
+  pinAndAddS = (id) => {
+    console.log("试图添加:",id);
+    this.setState({isAddStackModalVisible:true, stackOnAdding: id});
+  }
+  
 
   changeType = (value) => {
     console.log(value);
@@ -1062,6 +1154,19 @@ class TimeDOM extends React.Component {
                     <Table dataSource={this.state.stackSource} columns={this.stackColumns} style={{ width: '100%' }} />
                   </Flex>
 
+                  <Modal
+                    title={"本次添加库存："+this.state.addingSum}
+                    visible={this.state.isAddStackModalVisible}
+                    onOk={this.handleAddModalOk}
+                    onCancel={this.handleAddModalCancel}
+                  >
+                    {
+                      addTypeList.map((i) =>
+                        <button onClick={i => this.handleAddTypeClick(i)}>{i}</button>
+                      )
+                    }
+                  </Modal>
+
                   <Timeline reverse={this.state.reverse}>
                     <MyTimeLine
                       source={this.state.timelineSource}
@@ -1101,7 +1206,7 @@ class TimeDOM extends React.Component {
                       )}
                     </Timeline>)
                   }
-                  {
+                  {//------------------靠边模式，无法修改和删除-----------------------
                     (this.state.mode === "null") && (
                       <Timeline
                       >
