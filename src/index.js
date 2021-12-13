@@ -1,6 +1,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import './index.css';
+import './index.less';
 import moment from 'moment';
 import reportWebVitals from './reportWebVitals';
 import 'antd-mobile/dist/antd-mobile.css';
@@ -391,36 +392,44 @@ class TimeDOM extends React.Component {
         title: '更新',
         dataIndex: 'done',
         key: 'done',
-        width: '50px',
+        width: '70px',
         render: (name, { changing, id, cur, sum, pinned }) => ([
-          (pinned===true)&&(<Button
-            shape="circle"
+          (pinned===true)&&(<button
+            class="stackButton"
+            style={{backgroundColor: '#d9f7be'}}
             onClick={() => this.pinAndAddS(id)}
           >
-            <IconFont style={{ color: "green", fontSize:"20px",position: "relative",top: "-3.8px" }} type="icon-cangku_kucunxiangqing"></IconFont>
-          </Button>),
-          (pinned!==true)&&(<Button
-            shape="circle"
+            <IconFont style={{ color: "#092b00", fontSize:"12px",position: "relative",top: "-3px"}} type="icon-cangku_kucunxiangqing"></IconFont>
+          </button>),
+          (pinned!==true)&&(<button
+            class="stackButton"
+            style={{backgroundColor: '#bae7ff'}}
             onClick={() => this.pinS(id)}
           >
-            <IconFont style={{ color: "#6c757d", fontSize:"20px",position: "relative",top: "-3.8px" }} type="icon-dingzhu"></IconFont>
-          </Button>),
+            <IconFont style={{ color: "#fff", fontSize:"12px",position: "relative",top: "-3px" }} type="icon-dingzhu"></IconFont>
+          </button>),
           (cur === sum) && (<Button
             type="danger"
             shape="circle"
+            size='small'
+            style={{margin:"2px"}}
             onClick={() => this.deleteS(id)}
           >
             忘
           </Button>),
           (changing === 0 && cur !== sum) && (<Button
             shape="circle"
+            size='small'
+            style={{margin:"2px"}}
             onClick={() => this.ready(id, cur)}
           >
             改
           </Button>),
           (changing === 1 && cur !== sum) && (<Button
             shape="circle"
+            size='small'
             type="primary"
+            style={{margin:"2px"}}
             onClick={() => this.update(id)}
           >
             定
@@ -523,6 +532,30 @@ class TimeDOM extends React.Component {
     this.setState({ timelineSource: data });
   }
 
+  stackClear() {
+    var collection = localStorage.getItem("stack");
+    let tool = JSON.parse(collection);
+    if (tool != null) {
+      var data = [];
+    }
+    localStorage.setItem("stack", JSON.stringify(data));
+    this.setState({ stackSource: data });
+  }
+
+  stackRE() {
+    var collection = localStorage.getItem("stack");
+    let tool = JSON.parse(collection);
+    var data = [];
+    for(var i=0;i<tool.length;i++) {
+      tool[i]["changing"] = 0;
+      tool[i]["id"]=i+1;
+      tool[i]["pinned"]=false;
+      data.push(tool[i]);
+    }
+    localStorage.setItem("stack", JSON.stringify(data));
+    this.setState({ stackSource: data });
+  }
+
   bclear() {
     var collection = localStorage.getItem("bulletins");
     let tool = JSON.parse(collection);
@@ -574,16 +607,12 @@ class TimeDOM extends React.Component {
       tool["sum"]=tool["sum"]+this.state.addingSum;
       data_added.push(tool);
       for (var j = id; j < data.length; j++) {
-        data[j]["id"] = data[j]["id"] - 1;
         data_added.push(data[j]);
       }
       console.log('data:', data_added);
     } else return;
-    this.setState({ stackSource: data_added });
+    this.setState({ stackSource: data_added ,isAddStackModalVisible: false,addingSum:0});
     localStorage.setItem("stack", JSON.stringify(data_added));
-
-
-    this.setState({ isAddStackModalVisible: false,addingSum:0 });
   }
 
   handleAddModalCancel = value => {
@@ -640,6 +669,7 @@ class TimeDOM extends React.Component {
   }
 
   update = (id) => {
+    console.log(id);
     var collection = localStorage.getItem("stack");
     var collection2 = localStorage.getItem("timeline");
     if (collection != null) {
@@ -682,6 +712,7 @@ class TimeDOM extends React.Component {
         data[j]["id"] = data[j]["id"] - 1;
         data_deleted.push(data[j]);
       }
+      console.log('删除id:',id,"   信息为：",data[id-1]);
       console.log('data:', data_deleted);
     } else return;
     this.setState({ stackSource: data_deleted });
@@ -698,11 +729,11 @@ class TimeDOM extends React.Component {
         data_pinned.push(data[i]);
       }
       //对第ID个做PIN处理
-      var tool=data[ id - 1];
+      var tool=data[id-1];
       tool["pinned"]=true;
       data_pinned.push(tool);
+      console.log('pin住这个id：',id,"  内容是：",tool);
       for (var j = id; j < data.length; j++) {
-        data[j]["id"] = data[j]["id"] - 1;
         data_pinned.push(data[j]);
       }
       console.log('data:', data_pinned);
@@ -919,7 +950,7 @@ class TimeDOM extends React.Component {
           title="废宅养肝宝"
           subTitle="憋玩了，学习去吧"
         />
-        <WingBlank size="lg">
+        {/* <WingBlank size="lg"> */}
           <Tabs tabs={tabs2}
             initialPage={2}
             renderTab={tab => <span>{tab.title}</span>}
@@ -1180,6 +1211,22 @@ class TimeDOM extends React.Component {
                     精简缓存
                   </Button>
 
+                  <Button
+                    onClick={() => this.stackClear()}
+                    type="primary"
+                  >
+                    清空缓存
+                  </Button>
+
+                  <Button
+                    onClick={() => this.stackRE()}
+                    type="primary"
+                  >
+                    问题修复
+                  </Button>
+                  <p>问题修复：修复pin功能导致的“部分操作对不上号”，“无法退出修改状态”等问题。
+                    同时会将所有货物修改回“非入库状态”。这个耻辱的，不优雅的回档按钮，将在两个版本之后删除。</p>
+
                 </Card.Body>
 
               </Card>
@@ -1304,7 +1351,7 @@ class TimeDOM extends React.Component {
               </Card>
             </div>
           </Tabs>
-        </WingBlank>
+        {/* </WingBlank> */}
       </div>
     )
   }
