@@ -450,13 +450,26 @@ class TimeDOM extends React.Component {
     );
   }
 
-  formRef = React.createRef()
+  componentDidUpdate() {
+    if (this.formRefT.current !== null) {
+        this.formRefT.current.resetFields();
+    }
+    if (this.formRefS.current !== null) {
+      this.formRefS.current.resetFields();
+  }
+  if (this.formRefB.current !== null) {
+    this.formRefB.current.resetFields();
+}
+}
+
+  formRefT = React.createRef()
+  formRefS = React.createRef()
+  formRefB = React.createRef()
 
   comple = (id) => {
     var collection = localStorage.getItem("todo");
     if (collection != null) {
       var data = JSON.parse(collection);
-      console.log(id - 1);
       data[id - 1]["done"] = true;
     } else return;
     this.setState({ todoSource: data });
@@ -476,7 +489,6 @@ class TimeDOM extends React.Component {
         data_end.push(data[j]);
       }
     } else return;
-    console.log('data:', data_end);
     this.setState({ todoSource: data_end });
     localStorage.setItem("todo", JSON.stringify(data_end));
   }
@@ -577,26 +589,20 @@ class TimeDOM extends React.Component {
   }
 
   onStackChange = value => {
-    console.log(value);
     this.setState({ new_cur: value });
   }
 
   onTypeChange = value => {
-    console.log(value);
-    console.log(value.target.value)
     this.setState({ cur_type: value.target.value });
   }
 
   onModeChange = value => {
-    console.log(value);
-    console.log(value.target.value)
     this.setState({ mode: value.target.value });
   }
 
   handleAddModalOk = value => {
     var id=this.state.stackOnAdding;
     var collection = localStorage.getItem("stack");
-    console.log("handle add中:");
     if (collection != null) {
       var data = JSON.parse(collection);
       var data_added = [];
@@ -609,7 +615,6 @@ class TimeDOM extends React.Component {
       for (var j = id; j < data.length; j++) {
         data_added.push(data[j]);
       }
-      console.log('data:', data_added);
     } else return;
     this.setState({ stackSource: data_added ,isAddStackModalVisible: false,addingSum:0});
     localStorage.setItem("stack", JSON.stringify(data_added));
@@ -620,9 +625,7 @@ class TimeDOM extends React.Component {
   }
 
   handleAddTypeClick= i => {
-    console.log(i);
     var tool=Number(i.target.innerHTML);
-    console.log(tool);
     this.setState({ addingSum: tool });
   }
 
@@ -631,7 +634,6 @@ class TimeDOM extends React.Component {
     var id = this.state.btiLineOnChange;
     var index = tool.findIndex((line) => line.id === id);
     tool[index].type = this.state.cur_type;
-    console.log(tool[index]);
     this.setState({ btilineSource: tool, isModalVisible: false });
     localStorage.setItem("bulletins", JSON.stringify(tool));
   }
@@ -669,7 +671,6 @@ class TimeDOM extends React.Component {
   }
 
   update = (id) => {
-    console.log(id);
     var collection = localStorage.getItem("stack");
     var collection2 = localStorage.getItem("timeline");
     if (collection != null) {
@@ -677,7 +678,6 @@ class TimeDOM extends React.Component {
       var log1 = this.state.new_cur - data[id - 1]["cur"];
       data[id - 1]["cur"] = this.state.new_cur;
       data[id - 1]["changing"] = 0;
-      console.log(data);
     } else return;
     if (data[id - 1]["cur"] === data[id - 1]["sum"]) {
       var line = moment().format("MM-DD").toString() + " 超棒 " + data[id - 1]["title"] + "全部用完";
@@ -712,15 +712,12 @@ class TimeDOM extends React.Component {
         data[j]["id"] = data[j]["id"] - 1;
         data_deleted.push(data[j]);
       }
-      console.log('删除id:',id,"   信息为：",data[id-1]);
-      console.log('data:', data_deleted);
     } else return;
     this.setState({ stackSource: data_deleted });
     localStorage.setItem("stack", JSON.stringify(data_deleted));
   }
 
   pinS = (id) => {
-    console.log("pinS");
     var collection = localStorage.getItem("stack");
     if (collection != null) {
       var data = JSON.parse(collection);
@@ -732,25 +729,20 @@ class TimeDOM extends React.Component {
       var tool=data[id-1];
       tool["pinned"]=true;
       data_pinned.push(tool);
-      console.log('pin住这个id：',id,"  内容是：",tool);
       for (var j = id; j < data.length; j++) {
         data_pinned.push(data[j]);
       }
-      console.log('data:', data_pinned);
     } else return;
     this.setState({ stackSource: data_pinned });
     localStorage.setItem("stack", JSON.stringify(data_pinned));
   }
 
   pinAndAddS = (id) => {
-    console.log("试图添加:",id);
     this.setState({isAddStackModalVisible:true, stackOnAdding: id});
   }
   
 
   changeType = (value) => {
-    console.log(value);
-    console.log(value.id + " type: " + value.type);
     this.setState({ isModalVisible: true, btiLineOnChange: value.id, cur_type: value.type });
   }
 
@@ -777,9 +769,7 @@ class TimeDOM extends React.Component {
   }
 
   onFinish = (values) => {
-    console.log(values);
     if (values.sum !== undefined) {//-----sum-----用于tab2库存-----------
-      console.log("处理库存部分");
       var collection = localStorage.getItem("stack");
       var collection2 = localStorage.getItem("timeline");
       if (collection != null) {
@@ -788,56 +778,52 @@ class TimeDOM extends React.Component {
       if (collection2 != null) {
         var data2 = JSON.parse(collection2);
       } else var data2 = [];
-      console.log('data:', data);
       var seq = Object.keys(data).length;
       var todo = { "id": seq + 1, "title": values.sdetail, "sum": parseInt(values.sum), "cur": 0, "changing": 0 };
       data.push(todo);
       var line = moment().format("MM-DD").toString() + " 加入 " + values.sdetail;
       data2.push(line);
-      console.log('data:', data);
-      console.log(typeof (data));
       localStorage.setItem("stack", JSON.stringify(data));
       localStorage.setItem("timeline", JSON.stringify(data2));
       this.setState({ stackSource: data, timelineSource: data2 });
-      this.onReset();
+      this.onResetT();
     } else if (values.bulletin === undefined) {//-----bti-----用于tab1时间-----------
       var collection = localStorage.getItem("todo");
       if (collection != null) {
         var data = JSON.parse(collection);
       } else var data = [];
-      console.log('data:', data);
       var seq = Object.keys(data).length;
       var todo = { "id": seq + 1, "title": values.detail, "done": false, "ddl": values.time };
       data.push(todo);
-      console.log('data:', data);
-      console.log(typeof (data));
       localStorage.setItem("todo", JSON.stringify(data));
       this.setState({ todoSource: data });
-      this.onReset();
+      this.onResetS();
     } else {//-----bti-----用于tab3子弹-----------
       var collection3 = localStorage.getItem("bulletins");
       if (collection3 != null) {
         var data3 = JSON.parse(collection3);
       } else var data3 = [];
-      console.log('data3:', data3);
       var seq3 = Object.keys(data3).length;
       var bti = { "id": seq3 + 1, "bti": values.bulletin, "type": 0, "ddl": values.btiTime };
       data3.push(bti);
-      console.log('data3:', data3);
-      //console.log(typeof (data3));
       localStorage.setItem("bulletins", JSON.stringify(data3));
       this.setState({ btilineSource: data3 });
-      this.onReset();
+      this.onResetB();
     }
-
   }
 
   onFinishFailed(errorInfo) {
     console.log('Failed:', errorInfo);
   };
 
-  onReset = () => {
-    this.formRef.current.resetFields();
+  onResetT = () => {
+    this.formRefT.current.resetFields();
+  };
+  onResetS = () => {
+    this.formRefS.current.resetFields();
+  };
+  onResetB = () => {
+    this.formRefB.current.resetFields();
   };
 
   tick() {
@@ -884,20 +870,14 @@ class TimeDOM extends React.Component {
     const ss = sum % 60;
     if (this.state.counting == false && this.state.cached == false) {
       this.setState({ timeSum: sum, hours, mins, ss });
-      console.log(typeof (this.state.timeSum), this.state.timeSum);
-      console.log(this.state.mins, this.state.ss);
     }
   }
 
   start = () => {
-    console.log("start!");
-    console.log(this.state.timeSum);
     const sum = this.state.timeSum;
     if (sum > 0 && this.state.counting == false) {
       var start = moment().format();
       var end = moment().add(sum, 'seconds')//找到的好函数！ 
-      console.log(moment().toString());
-      console.log(start);
       var dur = moment.duration(sum, 'seconds'),
         hours = dur.get('hours'),
         mins = dur.get('minutes'),
@@ -1074,7 +1054,7 @@ class TimeDOM extends React.Component {
                   <Form
                     onFinish={this.onFinish}
                     onFinishFailed={this.onFinishFailed}
-                    ref={this.formRef}
+                    ref={this.formRefT}
                     name="time"
                   >
 
@@ -1136,7 +1116,7 @@ class TimeDOM extends React.Component {
                   <Form
                     onFinish={this.onFinish}
                     onFinishFailed={this.onFinishFailed}
-                    ref={this.formRef}
+                    ref={this.formRefS}
                     name="stack"
                   >
 
@@ -1213,7 +1193,7 @@ class TimeDOM extends React.Component {
 
                   <Button
                     onClick={() => this.stackClear()}
-                    type="primary"
+                    type="alert"
                   >
                     清空缓存
                   </Button>
@@ -1288,7 +1268,7 @@ class TimeDOM extends React.Component {
                     onFinishFailed={this.onFinishFailed}
                     labelCol={{ span: 8 }}
                     wrapperCol={{ span: 16 }}
-                    ref={this.formRef}
+                    ref={this.formRefB}
                     name="bullet"
                   >
                     <Form.Item
