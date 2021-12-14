@@ -1,8 +1,8 @@
 {
   "files": {
     "main.css": "/arrangement.github.io/static/css/main.8293c1f4.chunk.css",
-    "main.js": "/arrangement.github.io/static/js/main.2afd52ae.chunk.js",
-    "main.js.map": "/arrangement.github.io/static/js/main.2afd52ae.chunk.js.map",
+    "main.js": "/arrangement.github.io/static/js/main.1b64cb3e.chunk.js",
+    "main.js.map": "/arrangement.github.io/static/js/main.1b64cb3e.chunk.js.map",
     "runtime-main.js": "/arrangement.github.io/static/js/runtime-main.9f3c40f2.js",
     "runtime-main.js.map": "/arrangement.github.io/static/js/runtime-main.9f3c40f2.js.map",
     "static/css/2.11f39018.chunk.css": "/arrangement.github.io/static/css/2.11f39018.chunk.css",
@@ -21,6 +21,6 @@
     "static/css/2.11f39018.chunk.css",
     "static/js/2.7a905696.chunk.js",
     "static/css/main.8293c1f4.chunk.css",
-    "static/js/main.2afd52ae.chunk.js"
+    "static/js/main.1b64cb3e.chunk.js"
   ]
 }
