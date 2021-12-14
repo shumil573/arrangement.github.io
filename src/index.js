@@ -389,7 +389,7 @@ class TimeDOM extends React.Component {
         ])
       },
       {
-        title: '更新',
+        title: '\xa0\xa0\xa0更新',
         dataIndex: 'done',
         key: 'done',
         width: '70px',
@@ -1193,7 +1193,7 @@ class TimeDOM extends React.Component {
 
                   <Button
                     onClick={() => this.stackClear()}
-                    type="alert"
+                    danger
                   >
                     清空缓存
                   </Button>
